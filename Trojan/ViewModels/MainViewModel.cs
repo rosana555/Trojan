@@ -46,7 +46,7 @@ public class MainViewModel : ObservableObject
         CalendarEvents = new ObservableCollection<CalendarEvent>(DataBaseUtil.GetCalendarEvents());
         GalleryItems = new ObservableCollection<GalleryItem>(DataBaseUtil.GetGalleryItems());
     }
-    // Adding functions 
+    // Adding functions (adds to observableCollection and db) 
     public void AddNote(Note newNote)
     {
         DataBaseUtil.AddNote(newNote);

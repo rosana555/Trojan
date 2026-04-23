@@ -6,7 +6,7 @@ namespace Trojan.DataBase
 {
     public static class DataBaseUtil
     {
-        // --- GET ALL ---
+        // Getters
         public static List<Note> GetNotes()
         {
             using var db = new AppDbContext();
@@ -31,7 +31,7 @@ namespace Trojan.DataBase
             return db.GalleryItems.ToList();
         }
 
-        // --- ADD ---
+        // Add - function add to db 
         public static void AddNote(Note note)
         {
             using var db = new AppDbContext();
