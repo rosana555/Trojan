@@ -1,6 +1,7 @@
 namespace Trojan.ViewModels;
 
 using System.Collections.ObjectModel;
+using Trojan.DataBase;
 using Trojan.Models;
 
 public class MainViewModel : ObservableObject
@@ -35,5 +36,36 @@ public class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
+        LoadData();
     }
+    //loads data from db to UI
+    private void LoadData()
+    {
+        Notes = new ObservableCollection<Note>(DataBaseUtil.GetNotes());
+        Jokes = new ObservableCollection<Joke>(DataBaseUtil.GetJokes());    
+        CalendarEvents = new ObservableCollection<CalendarEvent>(DataBaseUtil.GetCalendarEvents());
+        GalleryItems = new ObservableCollection<GalleryItem>(DataBaseUtil.GetGalleryItems());
+    }
+    // Adding functions (adds to observableCollection and db) 
+    public void AddNote(Note newNote)
+    {
+        DataBaseUtil.AddNote(newNote);
+        Notes.Add(newNote);
+    }
+    public void AddJoke(Joke newJoke)
+    {
+        DataBaseUtil.AddJoke(newJoke);
+        Jokes.Add(newJoke);
+    }
+    public void AddCalendarEvent(CalendarEvent newCalendarEvent)
+    {
+        DataBaseUtil.AddCalendarEvent(newCalendarEvent);
+        CalendarEvents.Add(newCalendarEvent);
+    }
+    public void AddGalleryItem(GalleryItem newGalleryItem)
+    {
+        DataBaseUtil.AddGalleryItem(newGalleryItem);
+        GalleryItems.Add(newGalleryItem);
+    }
+
 }
