@@ -1,7 +1,6 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
+﻿using System.Windows;
 using Trojan.DataBase;
+using Trojan.Views;
 
 namespace Trojan
 {
@@ -19,6 +18,10 @@ namespace Trojan
             {
                 db.Database.EnsureCreated();
             }
+
+            var helperOverlayWindow = new HelperOverlayWindow();
+            MainWindow = helperOverlayWindow;
+            helperOverlayWindow.Show();
         }
     }
 }
