@@ -1,0 +1,26 @@
+{
+  "image": "sprite_sheet.png",
+  "cell_width": 499,
+  "cell_height": 548,
+  "columns": 4,
+  "rows": 4,
+  "padding": 8,
+  "animations": {
+    "idle": {
+      "row": 0,
+      "frames": 4
+    },
+    "talking": {
+      "row": 1,
+      "frames": 4
+    },
+    "jump": {
+      "row": 2,
+      "frames": 3
+    },
+    "glitch_evil": {
+      "row": 3,
+      "frames": 4
+    }
+  }
+}

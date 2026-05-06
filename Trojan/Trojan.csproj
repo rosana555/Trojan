@@ -12,4 +12,13 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Assets\SpriteSheet\sprite_sheet.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SpriteSheet\sprite_sheet.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
