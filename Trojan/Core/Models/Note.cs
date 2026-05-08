@@ -1,7 +1,7 @@
 ﻿using System;
-using Trojan.ViewModels;
+using Trojan.Core.Base;
 
-namespace Trojan.Models
+namespace Trojan.Core.Models
 {
     public class Note : ObservableObject
     {

@@ -3,9 +3,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Trojan.Models;
+using Trojan.Core.Models;
 
-namespace Trojan.DataBase
+namespace Trojan.Data.DataBase
 {
     public class AppDbContext : DbContext
     {

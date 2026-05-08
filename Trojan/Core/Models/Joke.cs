@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Trojan.ViewModels;
+using Trojan.Core.Base;
 
-namespace Trojan.Models;
+namespace Trojan.Core.Models;
 
 public class Joke : ObservableObject
 {

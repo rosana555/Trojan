@@ -1,6 +1,6 @@
 using System.Windows.Input;
 
-namespace Trojan.Commands;
+namespace Trojan.Core.Commands;
 
 public sealed class RelayCommand : ICommand
 {

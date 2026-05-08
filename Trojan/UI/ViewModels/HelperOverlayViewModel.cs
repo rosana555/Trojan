@@ -1,9 +1,10 @@
 ﻿using System.Windows.Input;
 using Trojan.Commands;
-using Trojan.Services;
 using System.Windows.Media;
+using Trojan.Core.Base;
+using Trojan.Core.Interface;
 
-namespace Trojan.ViewModels;
+namespace Trojan.UI.ViewModels;
 
 public sealed class HelperOverlayViewModel : ObservableObject
 {

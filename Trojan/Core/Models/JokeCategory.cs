@@ -1,4 +1,4 @@
-namespace Trojan.Models;
+namespace Trojan.Core.Models;
 //TODO: has to be expanded 
 public enum JokeCategory
 {

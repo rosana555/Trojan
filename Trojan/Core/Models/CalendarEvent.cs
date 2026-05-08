@@ -1,7 +1,7 @@
-namespace Trojan.Models;
+namespace Trojan.Core.Models;
 
 using System;
-using Trojan.ViewModels;
+using Trojan.Core.Base;
 
 public class CalendarEvent : ObservableObject
 {

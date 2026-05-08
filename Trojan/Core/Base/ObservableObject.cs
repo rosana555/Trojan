@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Trojan.ViewModels;
+namespace Trojan.Core.Base;
 
 public abstract class ObservableObject : INotifyPropertyChanged
 {

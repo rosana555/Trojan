@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace Trojan.Services;
+namespace Trojan.Core.Interface;
 
 public interface IOverlayPositionService
 {

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Windows.Media;
 
-namespace Trojan.Services;
+namespace Trojan.Core.Interface;
 
 public interface IAvatarSpriteService : INotifyPropertyChanged
 {

@@ -1,6 +1,9 @@
 using Microsoft.Win32;
 using System.Windows;
+using Trojan.Core.Interface;
 using Trojan.Services;
+using Trojan.Services.Avatar;
+using Trojan.Services.Overlay;
 using Trojan.ViewModels;
 
 namespace Trojan.Views;

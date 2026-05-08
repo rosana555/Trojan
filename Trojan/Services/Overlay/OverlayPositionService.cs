@@ -1,6 +1,7 @@
 using System.Windows;
+using Trojan.Core.Interface;
 
-namespace Trojan.Services;
+namespace Trojan.Services.Overlay;
 
 public sealed class OverlayPositionService : IOverlayPositionService
 {

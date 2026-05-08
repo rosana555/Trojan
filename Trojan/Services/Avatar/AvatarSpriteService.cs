@@ -6,8 +6,9 @@ using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Trojan.Core.Interface;
 
-namespace Trojan.Services;
+namespace Trojan.Services.Avatar;
 
 public sealed class AvatarSpriteService : IAvatarSpriteService
 {
@@ -119,8 +120,8 @@ public sealed class AvatarSpriteService : IAvatarSpriteService
             int row = index / metadata.Columns;
             int column = index % metadata.Columns;
 
-            int x = metadata.Padding + (column * (metadata.CellWidth + metadata.Padding));
-            int y = metadata.Padding + (row * (metadata.CellHeight + metadata.Padding));
+            int x = metadata.Padding + column * (metadata.CellWidth + metadata.Padding);
+            int y = metadata.Padding + row * (metadata.CellHeight + metadata.Padding);
             x = Math.Clamp(x, 0, Math.Max(0, spriteSheet.PixelWidth - 1));
             y = Math.Clamp(y, 0, Math.Max(0, spriteSheet.PixelHeight - 1));
 
