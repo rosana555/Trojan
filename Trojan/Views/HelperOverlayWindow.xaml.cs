@@ -14,9 +14,10 @@ public partial class HelperOverlayWindow : Window
     public HelperOverlayWindow()
     {
         InitializeComponent();
-        _avatarSpriteService = new AvatarSpriteService();
+
         _overlayPositionService = new OverlayPositionService();
-        DataContext = new HelperOverlayViewModel(_avatarSpriteService);
+
+        DataContext = new HelperOverlayViewModel();
 
         Loaded += OnLoaded;
         SourceInitialized += (_, _) => RepositionToBottomRight();

@@ -2,6 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+		xmlns:gif="clr-namespace:WpfAnimatedGif;assembly=WpfAnimatedGif"  
+        
 		Title="HelperOverlayWindow"
         Width="850"
 		Height="620"
@@ -11,8 +13,8 @@
         Background="Transparent"
         ShowInTaskbar="False"
         Topmost="True"
-        ShowActivated="False"
-        Focusable="False"
+        ShowActivated="True"
+        Focusable="True"
         WindowStartupLocation="Manual"
         SnapsToDevicePixels="True"
         UseLayoutRounding="True">
@@ -28,13 +30,98 @@
 				<ColumnDefinition Width="240"/>
 			</Grid.ColumnDefinitions>
 
-			<!-- NOTE -->
-			<Border x:Name="NotePanel" Grid.Column="0" Width="500" 	Height="560" Background="#F7F2F8" 	CornerRadius="18" Padding="24" Margin="20" 	VerticalAlignment="Center" Opacity="0" 	RenderTransformOrigin="0.5,0.5" Visibility="{Binding IsNoteVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
-				<Border.Effect> <DropShadowEffect BlurRadius="18"   ShadowDepth="4"   Opacity="0.18"/></Border.Effect>
+        <Image Grid.Column="1"
+       Width="80"
+       Height="80"
+       Margin="0,0,8,22"
+       HorizontalAlignment="Right"
+       VerticalAlignment="Bottom"
+       Stretch="Uniform"
+       Panel.ZIndex="999"
+       IsHitTestVisible="False"
+       gif:ImageBehavior.AnimatedSource="{Binding AvatarGif}"/>
 
+        <!-- NOTE -->
+        <Border x:Name="NotePanel"
+        Grid.Column="0"
+        Width="500"
+        Height="560"
+        Background="#F7F2F8"
+        CornerRadius="18"
+        Padding="24"
+        Margin="20"
+        VerticalAlignment="Center"
+        Opacity="0"
+        RenderTransformOrigin="0.5,0.5"
+        Visibility="{Binding IsNoteVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
-				<Grid>
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="18"
+                          ShadowDepth="4"
+                          Opacity="0.18"/>
+            </Border.Effect>
+
+            <Border.RenderTransform>
+                <ScaleTransform ScaleX="0.92"
+                        ScaleY="0.92"/>
+            </Border.RenderTransform>
+
+            <Border.Style>
+                <Style TargetType="Border">
+
+                    <Style.Triggers>
+
+                        <DataTrigger Binding="{Binding IsNoteVisible}" Value="True">
+
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                 To="1"
+                                                 Duration="0:0:0.25"/>
+
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                 To="1"
+                                                 Duration="0:0:0.25"/>
+
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                 To="1"
+                                                 Duration="0:0:0.25"/>
+
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                 To="0"
+                                                 Duration="0:0:0.2"/>
+
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                 To="0.92"
+                                                 Duration="0:0:0.2"/>
+
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                 To="0.92"
+                                                 Duration="0:0:0.2"/>
+
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+
+                        </DataTrigger>
+
+                    </Style.Triggers>
+
+                </Style>
+            </Border.Style>
+
+            <Grid>
 
 					<Grid.RowDefinitions>
 						<RowDefinition Height="Auto"/>

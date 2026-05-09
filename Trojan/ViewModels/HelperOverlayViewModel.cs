@@ -8,12 +8,15 @@ namespace Trojan.ViewModels;
 public sealed class HelperOverlayViewModel : ObservableObject
 {
     private bool _areBubblesVisible;
-    private readonly IAvatarSpriteService _avatarSpriteService;
     private bool _isNoteVisible;
     private bool _isHistoryVisible;
     private bool _isJokeVisible;
     private bool _isFactVisible;
 
+    public Uri AvatarGif =>
+        new Uri(
+            "pack://application:,,,/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
+            UriKind.Absolute);
     public bool IsNoteVisible
     {
         get => _isNoteVisible;
@@ -45,12 +48,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
         set => SetProperty(ref _isFactVisible, value);
     }
 
-    public ImageSource AvatarImage => _avatarSpriteService.CurrentFrameImage;
-    public int AvatarFrameIndex
-    {
-        get => _avatarSpriteService.GetCurrentFrame();
-        set => _avatarSpriteService.SetCurrentFrame(value);
-    }
+  
 
     public ICommand ToggleBubblesCommand { get; }
     public ICommand OpenNoteCommand { get; }
@@ -63,22 +61,22 @@ public sealed class HelperOverlayViewModel : ObservableObject
     public ICommand PreviousFactCommand { get; }
 
 
-    public HelperOverlayViewModel(IAvatarSpriteService avatarSpriteService)
+    public HelperOverlayViewModel()
     {
-        _avatarSpriteService = avatarSpriteService;
-        _avatarSpriteService.PropertyChanged += OnAvatarSpriteServicePropertyChanged;
         ToggleBubblesCommand = new RelayCommand(ToggleBubbles);
+
         OpenNoteCommand = new RelayCommand(OpenNote);
         OpenHistoryCommand = new RelayCommand(OpenHistory);
+
         OpenJokeCommand = new RelayCommand(OpenJoke);
         NextJokeCommand = new RelayCommand(NextJoke);
         PreviousJokeCommand = new RelayCommand(PreviousJoke);
-        _jokeText = _jokes[_currentJokeIndex];
 
         OpenFactCommand = new RelayCommand(OpenFact);
         NextFactCommand = new RelayCommand(NextFact);
         PreviousFactCommand = new RelayCommand(PreviousFact);
 
+        _jokeText = _jokes[_currentJokeIndex];
         _factText = _facts[_currentFactIndex];
     }
 
@@ -215,16 +213,5 @@ public sealed class HelperOverlayViewModel : ObservableObject
         }
 
     }
-    private void OnAvatarSpriteServicePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(IAvatarSpriteService.CurrentFrameImage))
-        {
-            OnPropertyChanged(nameof(AvatarImage));
-        }
-
-        if (e.PropertyName == nameof(IAvatarSpriteService.CurrentFrameIndex))
-        {
-            OnPropertyChanged(nameof(AvatarFrameIndex));
-        }
-    }
+   
 }
