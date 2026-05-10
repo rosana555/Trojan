@@ -1,4 +1,5 @@
 ﻿using System.Windows.Input;
+using Trojan.Models;
 using Trojan.Commands;
 using Trojan.Services;
 using System.Windows.Media;
@@ -7,6 +8,8 @@ namespace Trojan.ViewModels;
 
 public sealed class HelperOverlayViewModel : ObservableObject
 {
+    public MainViewModel Main { get; }
+
     private bool _areBubblesVisible;
     private bool _isNoteVisible;
     private bool _isHistoryVisible;
@@ -59,10 +62,14 @@ public sealed class HelperOverlayViewModel : ObservableObject
     public ICommand OpenFactCommand { get; }
     public ICommand NextFactCommand { get; }
     public ICommand PreviousFactCommand { get; }
+    public ICommand CreateNoteCommand { get; }
+    public ICommand SaveNoteCommand { get; }
+    public ICommand DeleteNoteCommand { get; }
 
 
     public HelperOverlayViewModel()
     {
+        Main = new MainViewModel();
         ToggleBubblesCommand = new RelayCommand(ToggleBubbles);
 
         OpenNoteCommand = new RelayCommand(OpenNote);
@@ -75,6 +82,9 @@ public sealed class HelperOverlayViewModel : ObservableObject
         OpenFactCommand = new RelayCommand(OpenFact);
         NextFactCommand = new RelayCommand(NextFact);
         PreviousFactCommand = new RelayCommand(PreviousFact);
+        CreateNoteCommand = new RelayCommand(CreateNote);
+        SaveNoteCommand = new RelayCommand(SaveSelectedNote);
+        DeleteNoteCommand = new RelayCommand(DeleteSelectedNote);
 
         _jokeText = _jokes[_currentJokeIndex];
         _factText = _facts[_currentFactIndex];
@@ -115,6 +125,35 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsJokeVisible = false;
             IsFactVisible = false;
         }
+    }
+
+    private void CreateNote()
+    {
+        Main.CreateNoteCommand.Execute(null);
+        IsHistoryVisible = false;
+        IsNoteVisible = true;
+    }
+
+    private void SaveSelectedNote()
+    {
+        if (Main.SelectedNote is null)
+        {
+            return;
+        }
+
+        Main.SaveNoteCommand.Execute(null);
+        IsNoteVisible = false;
+        IsHistoryVisible = true;
+    }
+
+    private void DeleteSelectedNote()
+    {
+        if (Main.SelectedNote is null)
+        {
+            return;
+        }
+
+        Main.DeleteNoteCommand.Execute(null);
     }
 
     private void OpenJoke()

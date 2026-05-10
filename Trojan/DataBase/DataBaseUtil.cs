@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Trojan.Models;
@@ -10,7 +11,9 @@ namespace Trojan.DataBase
         public static List<Note> GetNotes()
         {
             using var db = new AppDbContext();
-            return db.Notes.ToList();
+            return db.Notes
+                .OrderByDescending(n => n.EditedAt ?? n.CreatedAt)
+                .ToList();
         }
 
         public static List<Joke> GetJokes()
@@ -35,7 +38,40 @@ namespace Trojan.DataBase
         public static void AddNote(Note note)
         {
             using var db = new AppDbContext();
+            note.CreatedAt = DateTime.UtcNow;
+            note.EditedAt = null;
             db.Notes.Add(note);
+            db.SaveChanges();
+        }
+
+        public static void SaveNote(Note note)
+        {
+            using var db = new AppDbContext();
+            if (note.Id == 0)
+            {
+                note.CreatedAt = DateTime.UtcNow;
+                note.EditedAt = null;
+                db.Notes.Add(note);
+            }
+            else
+            {
+                note.EditedAt = DateTime.UtcNow;
+                db.Notes.Update(note);
+            }
+
+            db.SaveChanges();
+        }
+
+        public static void DeleteNote(int noteId)
+        {
+            using var db = new AppDbContext();
+            var note = db.Notes.FirstOrDefault(n => n.Id == noteId);
+            if (note is null)
+            {
+                return;
+            }
+
+            db.Notes.Remove(note);
             db.SaveChanges();
         }
 
