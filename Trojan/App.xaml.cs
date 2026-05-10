@@ -1,6 +1,6 @@
 ﻿using System.Windows;
-using Trojan.DataBase;
-using Trojan.Seeders;
+using Trojan.Data.DataBase;
+using Trojan.Data.Seeders;
 using Trojan.Views;
 
 namespace Trojan

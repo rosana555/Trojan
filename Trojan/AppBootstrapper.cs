@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Trojan.Data.Seeders;
-using Trojan.DataBase;
+using Trojan.Data.DataBase;
 using Trojan.Services.Logger;
 namespace Trojan;
 

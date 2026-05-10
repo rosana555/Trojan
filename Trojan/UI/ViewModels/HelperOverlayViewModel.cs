@@ -1,5 +1,5 @@
 ﻿using System.Windows.Input;
-using Trojan.Commands;
+using Trojan.Core.Commands;
 using System.Windows.Media;
 using Trojan.Core.Base;
 using Trojan.Core.Interface;

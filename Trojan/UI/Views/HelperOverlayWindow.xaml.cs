@@ -4,7 +4,7 @@ using Trojan.Core.Interface;
 using Trojan.Services;
 using Trojan.Services.Avatar;
 using Trojan.Services.Overlay;
-using Trojan.ViewModels;
+using Trojan.UI.ViewModels;
 
 namespace Trojan.Views;
 

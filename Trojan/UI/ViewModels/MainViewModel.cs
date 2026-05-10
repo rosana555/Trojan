@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using Microsoft.EntityFrameworkCore;
-using Trojan.DataBase;
+using Trojan.Data.DataBase;
 using Trojan.Core.Models;
 using Trojan.Core.Base;
 
