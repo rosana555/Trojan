@@ -51,7 +51,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
         set => SetProperty(ref _isFactVisible, value);
     }
 
-  
+
 
     public ICommand ToggleBubblesCommand { get; }
     public ICommand OpenNoteCommand { get; }
@@ -77,7 +77,6 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         OpenJokeCommand = new RelayCommand(OpenJoke);
         NextJokeCommand = new RelayCommand(NextJoke);
-        PreviousJokeCommand = new RelayCommand(PreviousJoke);
 
         OpenFactCommand = new RelayCommand(OpenFact);
         NextFactCommand = new RelayCommand(NextFact);
@@ -168,12 +167,28 @@ public sealed class HelperOverlayViewModel : ObservableObject
         }
     }
 
-    private readonly List<string> _jokes =
-[
-    "Kam je šla Sally po eksploziji? Vsepovsod!",
-    "Kako rečeš smrdljivemu duhu? SmrDUH!",
-    "Zakaj programerji sovražijo naravo? Preveč bugov."
-];
+    private static List<string> ReadJokes()
+    {
+        var list = new List<string>();
+        var file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Joke", "joke.csv");
+        using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(file))
+        {
+            parser.TextFieldType = Microsoft.VisualBasic.FileIO.FieldType.Delimited;
+            parser.SetDelimiters(",");
+            parser.ReadLine();
+            while (!parser.EndOfData)
+            {
+                string[] fields = parser.ReadFields(); //field[0] = ID fields[1] = Joke
+                if (fields.Length >= 2)
+                {
+                    list.Add(fields[1]);
+                }
+            }
+        }
+        return list;
+    }
+
+    private readonly List<string> _jokes = ReadJokes();
 
     private int _currentJokeIndex = 0;
 
@@ -190,22 +205,10 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     private void NextJoke()
     {
-        if (_currentJokeIndex < _jokes.Count - 1)
-        {
-            _currentJokeIndex++;
-            JokeText = _jokes[_currentJokeIndex];
-        }
+        Random rand = new Random();
+        int _currentJokeIndex = rand.Next(_jokes.Count - 1);
+        JokeText = _jokes[_currentJokeIndex];
     }
-
-    private void PreviousJoke()
-    {
-        if (_currentJokeIndex > 0)
-        {
-            _currentJokeIndex--;
-            JokeText = _jokes[_currentJokeIndex];
-        }
-    }
-
 
     private string _factText;
 
@@ -252,5 +255,5 @@ public sealed class HelperOverlayViewModel : ObservableObject
         }
 
     }
-   
+
 }
