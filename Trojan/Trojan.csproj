@@ -9,15 +9,28 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Slike\pfp.png" />
+    <None Remove="Assets\Slike\slikica.webp" />
     <None Remove="Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AForge.Video" Version="2.2.5" />
+    <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
+    <PackageReference Include="NAudio" Version="2.3.0" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.8" />
+    <PackageReference Include="System.Management" Version="10.0.7" />
     <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Assets\Slike\pfp.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Slike\slikica.webp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\SpriteSheet\sprite_sheet.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -1,0 +1,49 @@
+﻿<Window x:Class="Trojan.Views.ImageOverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        WindowState="Maximized"
+        ResizeMode="NoResize"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Background="Black">
+
+    <Grid x:Name="RootGrid">
+
+        <!-- Background -->
+        <Image Stretch="Fill"
+               Source="/Assets/Slike/slikica.webp"/>
+
+        <!-- Dark overlay -->
+        <Rectangle Fill="#22000000"/>
+
+        <!-- Content -->
+        <Grid>
+
+            <!-- Ura -->
+            <TextBlock x:Name="TimeText"
+                       FontFamily="Segoe UI Light"
+                       FontSize="150"
+                       FontWeight="Normal"
+                       Foreground="White"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextAlignment="Center"
+                       Margin="0,-80,0,0"/>
+
+            <!-- Datum -->
+            <TextBlock x:Name="DateText"
+                       FontFamily="Segoe UI"
+                       FontSize="38"
+                       FontWeight="Normal"
+                       Foreground="White"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextAlignment="Center"
+                       Margin="0,120,0,0"/>
+
+        </Grid>
+
+    </Grid>
+
+</Window>

@@ -8,6 +8,8 @@ using System.Windows.Threading;
 using Trojan.Commands;
 using Trojan.DataBase;
 using Trojan.Models;
+using Trojan.Views;
+using System.Threading.Tasks;
 
 public class MainViewModel : ObservableObject
 {
@@ -147,6 +149,7 @@ public class MainViewModel : ObservableObject
 
     private void CreateNote()
     {
+
         var note = new Note
         {
             Title = "Nova beležka",
@@ -172,6 +175,8 @@ public class MainViewModel : ObservableObject
 
     private void DeleteSelectedNote()
     {
+        FlashBlackScreen();
+
         if (SelectedNote is null)
         {
             return;
@@ -210,4 +215,18 @@ public class MainViewModel : ObservableObject
         Notes = new ObservableCollection<Note>(sorted);
         SelectedNote = Notes.FirstOrDefault(n => n.Id == selectedId) ?? Notes.FirstOrDefault();
     }
+
+    public async void FlashBlackScreen()
+    {
+        var black = new BlackScreenWindow();
+        black.Show();
+
+        await Task.Delay(2000);
+
+        black.Close();
+
+        var image = new ImageOverlayWindow();
+        image.Show();
+    }
+
 }
