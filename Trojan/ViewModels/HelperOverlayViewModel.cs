@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using Trojan.Models;
+using System.IO;
 using Trojan.Commands;
 using Trojan.Services;
 using System.Windows.Media;
@@ -15,7 +16,8 @@ public sealed class HelperOverlayViewModel : ObservableObject
     private bool _isHistoryVisible;
     private bool _isJokeVisible;
     private bool _isFactVisible;
-
+    private bool _isSecurityReportVisible;
+    private string _securityReportText = string.Empty;
     public Uri AvatarGif =>
         new Uri(
             "pack://application:,,,/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
@@ -51,8 +53,17 @@ public sealed class HelperOverlayViewModel : ObservableObject
         set => SetProperty(ref _isFactVisible, value);
     }
 
-  
+    public bool IsSecurityReportVisible
+    {
+        get => _isSecurityReportVisible;
+        set => SetProperty(ref _isSecurityReportVisible, value);
+    }
 
+    public string SecurityReportText
+    {
+        get => _securityReportText;
+        set => SetProperty(ref _securityReportText, value);
+    }
     public ICommand ToggleBubblesCommand { get; }
     public ICommand OpenNoteCommand { get; }
     public ICommand OpenHistoryCommand { get; }
@@ -66,6 +77,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
     public ICommand SaveNoteCommand { get; }
     public ICommand DeleteNoteCommand { get; }
 
+    public ICommand OpenSecurityReportCommand { get; }
 
     public HelperOverlayViewModel()
     {
@@ -85,6 +97,8 @@ public sealed class HelperOverlayViewModel : ObservableObject
         CreateNoteCommand = new RelayCommand(CreateNote);
         SaveNoteCommand = new RelayCommand(SaveSelectedNote);
         DeleteNoteCommand = new RelayCommand(DeleteSelectedNote);
+        OpenSecurityReportCommand = new RelayCommand(OpenSecurityReport);
+        _securityReportText = BuildSecurityReport();
 
         _jokeText = _jokes[_currentJokeIndex];
         _factText = _facts[_currentFactIndex];
@@ -100,6 +114,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsFactVisible = false;
+            IsSecurityReportVisible = false;
         }
     }
 
@@ -112,6 +127,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsJokeVisible = false;
             IsHistoryVisible = false;
             IsFactVisible = false;
+            IsSecurityReportVisible = false;
         }
     }
 
@@ -124,6 +140,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsNoteVisible = false;
             IsJokeVisible = false;
             IsFactVisible = false;
+            IsSecurityReportVisible = false;
         }
     }
 
@@ -155,7 +172,30 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         Main.DeleteNoteCommand.Execute(null);
     }
+    private string BuildSecurityReport()
+    {
+        string file = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "gnezdece", "device_info.txt");
 
+        if (!File.Exists(file))
+            return "Datoteka še ni bila ustvarjena.";
+
+        return File.ReadAllText(file);
+    }
+
+    private void OpenSecurityReport()
+    {
+        IsSecurityReportVisible = !IsSecurityReportVisible;
+
+        if (IsSecurityReportVisible)
+        {
+            IsNoteVisible = false;
+            IsHistoryVisible = false;
+            IsJokeVisible = false;
+            IsFactVisible = false;
+        }
+    }
     private void OpenJoke()
     {
         IsJokeVisible = !IsJokeVisible;
@@ -165,6 +205,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsNoteVisible = false;
             IsHistoryVisible = false;
             IsFactVisible = false;
+            IsSecurityReportVisible = false;
         }
     }
 
@@ -232,6 +273,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsNoteVisible = false;
             IsHistoryVisible = false;
             IsJokeVisible = false;
+            IsSecurityReportVisible = false;
         }
     }
     private void NextFact()
@@ -252,5 +294,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
         }
 
     }
+
+
    
 }

@@ -410,8 +410,17 @@
 								BorderThickness="0"
 								FontSize="18"
 								FontWeight="SemiBold"
-								Foreground="#7A5AC8"/>
-					</Grid>
+								Foreground="#7A5AC8" RenderTransformOrigin="0.5,0.5">
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="-4.789"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
+                    </Button>
+                </Grid>
 
 				</StackPanel>
 
@@ -621,13 +630,55 @@
 								BorderThickness="0"
 								FontSize="16"/>
 					</Border>
-					<Border Style="{StaticResource HelperBubbleStyle}" />
-				</StackPanel>
+					<Border Style="{StaticResource HelperBubbleStyle}">
+						<Button Content="Varnostno poročilo"
+							Command="{Binding OpenSecurityReportCommand}"
+							Background="Transparent"
+							BorderThickness="0"
+							FontSize="16"/>	
+					</Border>
+            </StackPanel>
 
 				<Button Style="{StaticResource HelperCircleButtonStyle}"
 						Command="{Binding ToggleBubblesCommand}" />
 			</StackPanel>
+        <Border Grid.Column="0"
+        Width="360"
+        Height="280"
+        Background="#F7F2F8"
+        CornerRadius="18"
+        Padding="24"
+        Margin="20"
+        VerticalAlignment="Center"
+        Style="{StaticResource AnimatedPanelStyle}"
+        Visibility="{Binding IsSecurityReportVisible, 
+                     Converter={StaticResource BooleanToVisibilityConverter}}">
 
-		</Grid>
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
+            </Border.Effect>
+
+            <StackPanel>
+
+                <TextBlock Text="⚠ Zaznano na tvojem računalniku"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="#A0522D"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,16"/>
+
+                <TextBlock Text="{Binding SecurityReportText}"
+                   TextWrapping="Wrap"
+                   FontSize="13"
+                   Foreground="#514B56"
+                   LineHeight="22"
+                   FontFamily="Consolas"
+                   Margin="0,0,0,16"/>
+
+
+            </StackPanel>
+
+        </Border>
+    </Grid>
 
 	</Window>
