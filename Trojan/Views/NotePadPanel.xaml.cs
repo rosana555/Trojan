@@ -277,9 +277,6 @@ public partial class NotePadPanel : UserControl
     // TABLE
     // ---------------------------
 
-    private void InsertTable_Click(object sender, RoutedEventArgs e)
-        => InsertTable(2, 2);
-
     private void TableSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (sender is not ComboBox combo)

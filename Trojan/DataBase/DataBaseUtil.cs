@@ -1,6 +1,8 @@
 using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Trojan.Models;
 
 namespace Trojan.DataBase
@@ -12,33 +14,41 @@ namespace Trojan.DataBase
         {
             using var db = new AppDbContext();
             return db.Notes
-                .OrderByDescending(n => n.EditedAt ?? n.CreatedAt)
+                .AsNoTracking()
+                .OrderByDescending(n => n.IsPinned)
+                .ThenByDescending(n => n.EditedAt ?? n.CreatedAt)
                 .ToList();
         }
 
         public static List<Joke> GetJokes()
         {
             using var db = new AppDbContext();
-            return db.Jokes.ToList();
+            return db.Jokes
+                .AsNoTracking()
+                .ToList();
         }
 
         public static List<CalendarEvent> GetCalendarEvents()
         {
             using var db = new AppDbContext();
-            return db.CalendarEvents.ToList();
+            return db.CalendarEvents
+                .AsNoTracking()
+                .ToList();
         }
 
         public static List<GalleryItem> GetGalleryItems()
         {
             using var db = new AppDbContext();
-            return db.GalleryItems.ToList();
+            return db.GalleryItems
+                .AsNoTracking()
+                .ToList();
         }
 
-        // Add - function add to db 
+        // Add - function add to db
         public static void AddNote(Note note)
         {
             using var db = new AppDbContext();
-            note.CreatedAt = DateTime.UtcNow;
+            note.CreatedAt = DateTime.Now;
             note.EditedAt = null;
             db.Notes.Add(note);
             db.SaveChanges();
@@ -47,17 +57,27 @@ namespace Trojan.DataBase
         public static void SaveNote(Note note)
         {
             using var db = new AppDbContext();
+
             if (note.Id == 0)
             {
-                note.CreatedAt = DateTime.UtcNow;
+                note.CreatedAt = DateTime.Now;
                 note.EditedAt = null;
+
                 db.Notes.Add(note);
+                db.SaveChanges();
+                return;
             }
-            else
-            {
-                note.EditedAt = DateTime.UtcNow;
-                db.Notes.Update(note);
-            }
+
+            note.EditedAt = DateTime.Now;
+
+            db.Attach(note);
+
+            db.Entry(note).Property(n => n.Title).IsModified = true;
+            db.Entry(note).Property(n => n.Content).IsModified = true;
+            db.Entry(note).Property(n => n.EditedAt).IsModified = true;
+            db.Entry(note).Property(n => n.IsPinned).IsModified = true;
+
+            db.Entry(note).Property(n => n.CreatedAt).IsModified = false;
 
             db.SaveChanges();
         }
@@ -75,7 +95,7 @@ namespace Trojan.DataBase
             db.SaveChanges();
         }
 
-        public static void AddJoke(Joke joke)
+        public static   void AddJoke(Joke joke)
         {
             using var db = new AppDbContext();
             db.Jokes.Add(joke);

@@ -8,7 +8,7 @@ namespace Trojan.Models
         private int _id;
         public int Id { get => _id; set => SetProperty(ref _id, value); }
 
-        private DateTime _createdAt = DateTime.UtcNow;
+        private DateTime _createdAt = DateTime.Now;
         public DateTime CreatedAt { get => _createdAt; set => SetProperty(ref _createdAt, value); }
 
         private string _title = string.Empty;

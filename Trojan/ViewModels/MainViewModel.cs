@@ -79,6 +79,12 @@ public class MainViewModel : ObservableObject
     private readonly RelayCommand _deleteNoteCommand;
     public RelayCommand DeleteNoteCommand => _deleteNoteCommand;
 
+    private readonly RelayCommand _togglePinCommand;
+    public RelayCommand TogglePinCommand => _togglePinCommand;
+
+    private readonly RelayCommand<Note> _togglePinForNoteCommand;
+    public RelayCommand<Note> TogglePinForNoteCommand => _togglePinForNoteCommand;
+
     public MainViewModel()
     {
         _autosaveTimer = new DispatcherTimer
@@ -90,6 +96,8 @@ public class MainViewModel : ObservableObject
         _createNoteCommand = new RelayCommand(CreateNote);
         _saveNoteCommand = new RelayCommand(SaveCurrentNote, () => SelectedNote is not null);
         _deleteNoteCommand = new RelayCommand(DeleteSelectedNote, () => SelectedNote is not null);
+        _togglePinCommand = new RelayCommand(TogglePinForSelectedNote, () => SelectedNote is not null);
+        _togglePinForNoteCommand = new RelayCommand<Note>(TogglePinForNote, note => note is not null);
 
         LoadData();
     }
@@ -183,9 +191,36 @@ public class MainViewModel : ObservableObject
         SelectedNote = Notes.FirstOrDefault();
     }
 
+    private void TogglePinForSelectedNote()
+    {
+        if (SelectedNote is null)
+        {
+            return;
+        }
+
+        SelectedNote.IsPinned = !SelectedNote.IsPinned;
+        DataBaseUtil.SaveNote(SelectedNote);
+        _hasPendingChanges = false;
+        SortNotes();
+    }
+
+    private void TogglePinForNote(Note? note)
+    {
+        if (note is null)
+        {
+            return;
+        }
+
+        SelectedNote = note;
+        note.IsPinned = !note.IsPinned;
+        DataBaseUtil.SaveNote(note);
+        _hasPendingChanges = false;
+        SortNotes();
+    }
+
     private void OnSelectedNotePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(Note.Title))
+        if (e.PropertyName is nameof(Note.Title) or nameof(Note.Content) or nameof(Note.IsPinned))
         {
             MarkNoteDirty();
         }
@@ -204,7 +239,8 @@ public class MainViewModel : ObservableObject
     {
         var selectedId = SelectedNote?.Id ?? 0;
         var sorted = Notes
-            .OrderByDescending(n => n.EditedAt ?? n.CreatedAt)
+            .OrderByDescending(n => n.IsPinned)
+            .ThenByDescending(n => n.EditedAt ?? n.CreatedAt)
             .ToList();
 
         Notes = new ObservableCollection<Note>(sorted);

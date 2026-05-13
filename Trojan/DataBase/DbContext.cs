@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using System;
+using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Trojan.Models;
 
@@ -16,7 +15,19 @@ namespace Trojan.DataBase
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=trojan.db");
+            var dbPath = GetDatabasePath();
+            optionsBuilder.UseSqlite($"Data Source={dbPath}");
+        }
+
+        private static string GetDatabasePath()
+        {
+            var dir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "gnezdece");
+
+            Directory.CreateDirectory(dir);
+
+            return Path.Combine(dir, "trojan.db");
         }
     }
 }

@@ -76,6 +76,8 @@ public sealed class HelperOverlayViewModel : ObservableObject
     public ICommand CreateNoteCommand { get; }
     public ICommand SaveNoteCommand { get; }
     public ICommand DeleteNoteCommand { get; }
+    public ICommand TogglePinCommand { get; }
+    public ICommand TogglePinForNoteCommand { get; }
 
     public ICommand OpenSecurityReportCommand { get; }
 
@@ -97,6 +99,8 @@ public sealed class HelperOverlayViewModel : ObservableObject
         CreateNoteCommand = new RelayCommand(CreateNote);
         SaveNoteCommand = new RelayCommand(SaveSelectedNote);
         DeleteNoteCommand = new RelayCommand(DeleteSelectedNote);
+        TogglePinCommand = new RelayCommand(TogglePin);
+        TogglePinForNoteCommand = Main.TogglePinForNoteCommand;
         OpenSecurityReportCommand = new RelayCommand(OpenSecurityReport);
         _securityReportText = BuildSecurityReport();
 
@@ -171,6 +175,16 @@ public sealed class HelperOverlayViewModel : ObservableObject
         }
 
         Main.DeleteNoteCommand.Execute(null);
+    }
+
+    private void TogglePin()
+    {
+        if (Main.SelectedNote is null)
+        {
+            return;
+        }
+
+        Main.TogglePinCommand.Execute(null);
     }
     private string BuildSecurityReport()
     {
