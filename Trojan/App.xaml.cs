@@ -1,32 +1,24 @@
 ﻿using System.Windows;
-using Trojan.DataBase;
+using Trojan.Data.DataBase;
+using Trojan.Data.Seeders;
 using Trojan.Views;
 using Trojan.Services;
 
 namespace Trojan
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
         protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            await DeviceScannerService.SaveDeviceInfo();
+            System.Diagnostics.Debug.WriteLine("🔥 APP STARTED");
 
-            //PODATKE O NAPRAVI SE SHRAANIJO NA "C:\Users\IME\AppData\Roaming\gnezdece\device_info.txt"
+            new AppBootstrapper().Run();
 
-            // Ob zagonu aplikacije zagotovimo, da je podatkovna baza ustvarjena
-            using (var db = new AppDbContext())
-            {
-                db.Database.EnsureCreated();
-            }
-
-            var helperOverlayWindow = new HelperOverlayWindow();
-            MainWindow = helperOverlayWindow;
-            helperOverlayWindow.Show();
+            var mainWindow = new HelperOverlayWindow();
+            MainWindow = mainWindow;
+            mainWindow.Show();
         }
     }
 }
