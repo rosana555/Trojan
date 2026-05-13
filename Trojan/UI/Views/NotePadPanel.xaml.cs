@@ -6,7 +6,6 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using Trojan.Utilities;
 using Trojan.UI.ViewModels;
 
 namespace Trojan.Views;
@@ -15,6 +14,7 @@ public partial class NotePadPanel : UserControl
 {
     private bool _isUpdatingDocument;
     private MainViewModel? _mainViewModel;
+    private Trojan.Core.Models.Note? _loadedNote;
 
     public NotePadPanel()
     {
@@ -28,12 +28,15 @@ public partial class NotePadPanel : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        NoteContentRichTextBox.TextChanged -= NoteContentRichTextBox_TextChanged;
+        NoteContentRichTextBox.TextChanged += NoteContentRichTextBox_TextChanged;
         HookToMainViewModel();
         LoadSelectedNoteIntoEditor();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        NoteContentRichTextBox.TextChanged -= NoteContentRichTextBox_TextChanged;
         UnhookFromMainViewModel();
     }
 
@@ -95,32 +98,26 @@ public partial class NotePadPanel : UserControl
         NoteContentRichTextBox.Document.Blocks.Clear();
 
         var selectedNote = vm.Main.SelectedNote;
+        _loadedNote = selectedNote;
         if (selectedNote is null)
         {
             _isUpdatingDocument = false;
             return;
         }
 
-        var parsed = NoteContentSerializer.DeserializeForEditor(selectedNote.Content);
-        if (parsed.IsRtf)
+      
+        if (!string.IsNullOrWhiteSpace(selectedNote.Content))
         {
-            if (!string.IsNullOrWhiteSpace(parsed.Content))
+            try
             {
-                try
-                {
-                    var range = new TextRange(NoteContentRichTextBox.Document.ContentStart, NoteContentRichTextBox.Document.ContentEnd);
-                    using var stream = new MemoryStream(Encoding.UTF8.GetBytes(parsed.Content));
-                    range.Load(stream, DataFormats.Rtf);
-                }
-                catch
-                {
-                    NoteContentRichTextBox.Document.Blocks.Add(new Paragraph(new Run("")));
-                }
+                var range = new TextRange(NoteContentRichTextBox.Document.ContentStart, NoteContentRichTextBox.Document.ContentEnd);
+                using var stream = new MemoryStream(Encoding.UTF8.GetBytes(selectedNote.Content));
+                range.Load(stream, DataFormats.Rtf);
             }
-        }
-        else
-        {
-            NoteContentRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsed.Content)));
+            catch
+            {
+                NoteContentRichTextBox.Document.Blocks.Add(new Paragraph(new Run("")));
+            }
         }
 
         _isUpdatingDocument = false;
@@ -128,12 +125,17 @@ public partial class NotePadPanel : UserControl
 
     private void NoteContentRichTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (_isUpdatingDocument || DataContext is not HelperOverlayViewModel vm || vm.Main.SelectedNote is null)
+        if (_isUpdatingDocument || DataContext is not HelperOverlayViewModel vm)
         {
             return;
         }
 
-        vm.Main.SelectedNote.Content = NoteContentSerializer.SerializeRtf(GetCurrentEditorRtf());
+        if (_loadedNote is null || !ReferenceEquals(_loadedNote, vm.Main.SelectedNote))
+        {
+            return;
+        }
+
+        _loadedNote.Content = GetCurrentEditorRtf();
         vm.Main.MarkNoteDirty();
     }
 

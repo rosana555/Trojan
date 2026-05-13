@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Bogus;
+﻿using Bogus;
 using Trojan.Core.Models;
 
 namespace Trojan.Services.Factories
-{
+{   
     internal class NoteFactory
     {
         private static readonly string[] NoteTitles = new[]
@@ -27,7 +22,7 @@ namespace Trojan.Services.Factories
         };
 
         private static readonly string[] NoteContents = new[]
-        {
+         {
             "Remember to buy milk, eggs, bread, and cheese from the store. Also pick up coffee beans.",
             "Discussed Q4 roadmap. Need to implement new authentication system. Follow up with backend team.",
             "1. Build real-time dashboard\n2. Improve API response time\n3. Add dark mode to UI\n4. Refactor database queries",

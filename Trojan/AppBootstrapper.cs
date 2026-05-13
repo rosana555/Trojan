@@ -14,6 +14,8 @@ public class AppBootstrapper
     public void Run()
     {
         using var db = new AppDbContext();
+        //comment if you dont want your db to be deleted each app launch 
+        db.Database.EnsureDeleted();
         db.Database.EnsureCreated();
         if(db.Notes.Count() <= 10)
         {

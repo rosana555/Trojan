@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+   <None Remove="UI\Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+    <Resource Include="UI\Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,11 @@
 using System.Windows.Input;
 using Trojan.Core.Commands;
-using Trojan.Models;
 using System.IO;
-using Trojan.Commands;
 using Trojan.Services;
 using System.Windows.Media;
 using Trojan.Core.Base;
 using Trojan.Core.Interface;
+using Trojan.Core.Models;
 
 namespace Trojan.UI.ViewModels;
 
@@ -23,7 +22,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
     private string _securityReportText = string.Empty;
     public Uri AvatarGif =>
         new Uri(
-            "pack://application:,,,/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
+            "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
             UriKind.Absolute);
     public bool IsNoteVisible
     {
@@ -69,6 +68,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
     }
     public ICommand ToggleBubblesCommand { get; }
     public ICommand OpenNoteCommand { get; }
+    public ICommand OpenNoteForNoteCommand { get; }
     public ICommand OpenHistoryCommand { get; }
     public ICommand OpenJokeCommand { get; }
     public ICommand NextJokeCommand { get; }
@@ -90,6 +90,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
         ToggleBubblesCommand = new RelayCommand(ToggleBubbles);
 
         OpenNoteCommand = new RelayCommand(OpenNote);
+        OpenNoteForNoteCommand = new RelayCommand<Note>(OpenNoteForNote);
         OpenHistoryCommand = new RelayCommand(OpenHistory);
 
         OpenJokeCommand = new RelayCommand(OpenJoke);
@@ -109,6 +110,26 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         _jokeText = _jokes[_currentJokeIndex];
         _factText = _facts[_currentFactIndex];
+    }
+
+    private void OpenNoteForNote(Note? note)
+    {
+        if (note is not null)
+        {
+            Main.SelectedNote = note;
+        }
+
+        if (!IsNoteVisible)
+        {
+            OpenNote();
+        }
+        else
+        {
+            IsHistoryVisible = false;
+            IsJokeVisible = false;
+            IsFactVisible = false;
+            IsSecurityReportVisible = false;
+        }
     }
 
     private void ToggleBubbles()

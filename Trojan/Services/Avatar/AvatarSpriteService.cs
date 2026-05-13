@@ -15,8 +15,8 @@ public sealed class AvatarSpriteService : IAvatarSpriteService
     private const int DefaultColumns = 4;
     private const int DefaultRows = 4;
     private const int DefaultFrameCount = DefaultColumns * DefaultRows;
-    private const string SpriteImageRelativePath = "Assets/SpriteSheet/gregor_samsa_sprite-1.gif";
-    private const string SpriteMetadataRelativePath = "Assets/SpriteSheet/gregor_samsa_sprite-1.gif";
+    private const string SpriteImageRelativePath = "UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif";
+    private const string SpriteMetadataRelativePath = "UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif";
     
 
     private readonly IReadOnlyList<CroppedBitmap> _frames;
@@ -62,10 +62,9 @@ public sealed class AvatarSpriteService : IAvatarSpriteService
             throw new IOException($"Sprite sheet not found at '{imagePath}'.");
         }
 
-        Uri imageUri = new(imagePath, UriKind.Absolute);
         BitmapImage bitmap = new();
         bitmap.BeginInit();
-        bitmap.UriSource = imageUri;
+        bitmap.UriSource = new Uri(imagePath, UriKind.Absolute);
         bitmap.CacheOption = BitmapCacheOption.OnLoad;
         bitmap.EndInit();
         bitmap.Freeze();

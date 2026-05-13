@@ -1,6 +1,4 @@
 using System.Windows.Input;
-using System;
-using System.Windows.Input;
 
 namespace Trojan.Core.Commands;
 
