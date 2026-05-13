@@ -31,8 +31,4 @@
     <Resource Include="Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Converters\" />
-  </ItemGroup>
-
 </Project>
