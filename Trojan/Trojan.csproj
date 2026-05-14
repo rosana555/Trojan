@@ -11,10 +11,12 @@
   <ItemGroup>
     <None Remove="Assets\Joke\joke.csv" />
     <None Remove="Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+   <None Remove="UI\Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
+	 <PackageReference Include="Bogus" Version="35.6.5" />
+	 <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
     <PackageReference Include="System.Management" Version="10.0.7" />
     <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
   </ItemGroup>
@@ -24,15 +26,28 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\SpriteSheet\sprite_sheet.png">
+    <Content Include="UI\Assets\SpriteSheet\sprite_sheet.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\SpriteSheet\sprite_sheet.json">
+    <Content Include="UI\Assets\SpriteSheet\sprite_sheet.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+    <Resource Include="UI\Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+    <None Remove="Assets\Joke\joke.csv" />
+    <None Remove="Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+   <None Remove="UI\Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+	 <PackageReference Include="Bogus" Version="35.6.5" />
+	 <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
+    <Content Include="UI\Assets\SpriteSheet\sprite_sheet.png">
+    <Content Include="Assets\Joke\joke.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SpriteSheet\sprite_sheet.png">
+    <Content Include="UI\Assets\SpriteSheet\sprite_sheet.json">
+    <Resource Include="UI\Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
   </ItemGroup>
 
 </Project>
