@@ -217,7 +217,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             "gnezdece", "device_info.txt");
 
         if (!File.Exists(file))
-            return "Datoteka öe ni bila ustvarjena.";
+            return "Datoteka ÔøΩe ni bila ustvarjena.";
 
         return File.ReadAllText(file);
     }
@@ -247,34 +247,28 @@ public sealed class HelperOverlayViewModel : ObservableObject
         }
     }
 
-    private readonly List<string> _jokes =
-[
-    "Kam je öla Sally po eksploziji? Vsepovsod!",
-    "Kako reËeö smrdljivemu duhu? SmrDUH!",
-    "Zakaj programerji sovraûijo naravo? PreveË bugov."
-];
-
-    private int _currentJokeIndex = 0;
-
-
-    private readonly List<string> _facts =
-[
-    "Hobotnice imajo tri srca.",
-    "Banane so tehniËno jagodiËevje.",
-    "Med nikoli ne poteËe."
-];
-
-    private int _currentFactIndex = 0;
-
-
-    private void NextJoke()
+    private static List<string> ReadJokes()
     {
-        if (_currentJokeIndex < _jokes.Count - 1)
+        var list = new List<string>();
+        var file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Joke", "joke.csv");
+        using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(file))
         {
-            _currentJokeIndex++;
-            JokeText = _jokes[_currentJokeIndex];
+            parser.TextFieldType = Microsoft.VisualBasic.FileIO.FieldType.Delimited;
+            parser.SetDelimiters(",");
+            parser.ReadLine();
+            while (!parser.EndOfData)
+            {
+                string[] fields = parser.ReadFields(); //field[0] = ID fields[1] = Joke
+                if (fields.Length >= 2)
+                {
+                    list.Add(fields[1]);
+                }
+            }
         }
+        return list;
     }
+
+    private readonly List<string> _jokes = ReadJokes();
 
     private void PreviousJoke()
     {
@@ -284,7 +278,26 @@ public sealed class HelperOverlayViewModel : ObservableObject
             JokeText = _jokes[_currentJokeIndex];
         }
     }
+    
+    private int _currentJokeIndex = 0;
 
+
+    private readonly List<string> _facts =
+[
+    "Hobotnice imajo tri srca.",
+    "Banane so tehniƒçno jagodiƒçevje.",
+    "Med nikoli ne poteƒçe."
+];
+
+    private int _currentFactIndex = 0;
+
+
+    private void NextJoke()
+    {
+        Random rand = new Random();
+        int _currentJokeIndex = rand.Next(_jokes.Count - 1);
+        JokeText = _jokes[_currentJokeIndex];
+    }
 
     private string _factText;
 
@@ -332,7 +345,5 @@ public sealed class HelperOverlayViewModel : ObservableObject
         }
 
     }
-
-
    
 }
