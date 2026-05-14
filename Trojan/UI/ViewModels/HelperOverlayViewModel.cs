@@ -282,12 +282,28 @@ public sealed class HelperOverlayViewModel : ObservableObject
     private int _currentJokeIndex = 0;
 
 
-    private readonly List<string> _facts =
-[
-    "Hobotnice imajo tri srca.",
-    "Banane so tehnično jagodičevje.",
-    "Med nikoli ne poteče."
-];
+    private static List<string> ReadFacts()
+    {
+        var list = new List<string>();
+        var file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Fact", "fact.csv");
+        using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(file))
+        {
+            parser.TextFieldType = Microsoft.VisualBasic.FileIO.FieldType.Delimited;
+            parser.SetDelimiters(",");
+            parser.ReadLine();
+            while (!parser.EndOfData)
+            {
+                string[] fields = parser.ReadFields();
+                if (fields.Length >= 2)
+                {
+                    list.Add(fields[1]);
+                }
+            }
+        }
+        return list;
+    }
+
+    private readonly List<string> _facts = ReadFacts();
 
     private int _currentFactIndex = 0;
 
@@ -329,11 +345,9 @@ public sealed class HelperOverlayViewModel : ObservableObject
     }
     private void NextFact()
     {
-        if (_currentFactIndex < _facts.Count - 1)
-        {
-            _currentFactIndex++;
-            FactText = _facts[_currentFactIndex];
-        }
+        Random rand = new Random();
+        int _currentFactIndex = rand.Next(_facts.Count - 1);
+        FactText = _facts[_currentFactIndex];
     }
 
     private void PreviousFact()
@@ -343,7 +357,6 @@ public sealed class HelperOverlayViewModel : ObservableObject
             _currentFactIndex--;
             FactText = _facts[_currentFactIndex];
         }
-
     }
    
 }
