@@ -270,6 +270,15 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     private readonly List<string> _jokes = ReadJokes();
 
+    private void PreviousJoke()
+    {
+        if (_currentJokeIndex > 0)
+        {
+            _currentJokeIndex--;
+            JokeText = _jokes[_currentJokeIndex];
+        }
+    }
+    
     private int _currentJokeIndex = 0;
 
 
