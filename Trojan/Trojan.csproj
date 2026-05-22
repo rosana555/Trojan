@@ -20,6 +20,10 @@
     <None Remove="Assets\Fact\fact.csv" />
     <None Remove="Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
     <None Remove="UI\Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+    <None Remove="UI\Assets\TestImages\image1.jpg" />
+    <None Remove="UI\Assets\TestImages\image2.jpg" />
+    <None Remove="UI\Assets\TestImages\image3.jpg" />
+    <None Remove="UI\Assets\TestImages\image4.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +37,10 @@
 
   <ItemGroup>
     <Resource Include="UI\Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+    <Resource Include="UI\Assets\TestImages\image1.jpg" />
+    <Resource Include="UI\Assets\TestImages\image2.jpg" />
+    <Resource Include="UI\Assets\TestImages\image3.jpg" />
+    <Resource Include="UI\Assets\TestImages\image4.jpg" />
   </ItemGroup>
 
 </Project>

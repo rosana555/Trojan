@@ -10,8 +10,45 @@ namespace Trojan.UI.ViewModels
 {
     public class GalleryViewModel : ObservableObject
     {
+        private bool _isInsideAlbum;
 
-        private ObservableCollection<GalleryItem> _galleryItems;
+        public bool IsInsideAlbum
+        {
+            get => _isInsideAlbum;
+            set => SetProperty(ref _isInsideAlbum, value);
+        }
+        private bool _isSelectingThumbnail;
+
+        public bool IsSelectingThumbnail
+        {
+            get => _isSelectingThumbnail;
+            set => SetProperty(ref _isSelectingThumbnail, value);
+        }
+        private bool _isCreatingAlbum;
+
+        public bool IsCreatingAlbum
+        {
+            get => _isCreatingAlbum;
+            set => SetProperty(ref _isCreatingAlbum, value);
+        }
+
+        private string _newAlbumTitle = string.Empty;
+
+        public string NewAlbumTitle
+        {
+            get => _newAlbumTitle;
+            set => SetProperty(ref _newAlbumTitle, value);
+        }
+        private bool _isAddingImage;
+
+        public bool IsAddingImage
+        {
+            get => _isAddingImage;
+            set => SetProperty(ref _isAddingImage, value);
+        }
+
+        private ObservableCollection<GalleryItem> _galleryItems =
+            new ObservableCollection<GalleryItem>();
 
         public ObservableCollection<GalleryItem> GalleryItems
         {
@@ -19,8 +56,8 @@ namespace Trojan.UI.ViewModels
             set => SetProperty(ref _galleryItems, value);
         }
 
-
-        private ObservableCollection<Album> _albums;
+        private ObservableCollection<Album> _albums =
+            new ObservableCollection<Album>();
 
         public ObservableCollection<Album> Albums
         {
@@ -28,18 +65,17 @@ namespace Trojan.UI.ViewModels
             set => SetProperty(ref _albums, value);
         }
 
+        private Album? _selectedAlbum;
 
-        private Album _selectedAlbum;
-
-        public Album SelectedAlbum
+        public Album? SelectedAlbum
         {
             get => _selectedAlbum;
             set => SetProperty(ref _selectedAlbum, value);
         }
 
-        private GalleryItem _selectedGalleryItem;
+        private GalleryItem? _selectedGalleryItem;
 
-        public GalleryItem SelectedGalleryItem
+        public GalleryItem? SelectedGalleryItem
         {
             get => _selectedGalleryItem;
             set => SetProperty(ref _selectedGalleryItem, value);
@@ -53,6 +89,9 @@ namespace Trojan.UI.ViewModels
 
         public ICommand RemoveImageFromAlbumCommand { get; }
 
+        public ICommand EnterCreateAlbumModeCommand { get; }
+
+        public ICommand SaveAlbumCommand { get; }
 
         public GalleryViewModel()
         {
@@ -73,14 +112,31 @@ namespace Trojan.UI.ViewModels
 
             RemoveImageFromAlbumCommand =
                 new RelayCommand(RemoveImageFromAlbum);
-        }
 
+            EnterCreateAlbumModeCommand =
+                new RelayCommand(EnterCreateAlbumMode);
+
+            SaveAlbumCommand =
+                new RelayCommand(SaveAlbum);
+        }
 
         public void AddGalleryItem(GalleryItem newGalleryItem)
         {
             DataBaseUtil.AddGalleryItem(newGalleryItem);
 
             GalleryItems.Add(newGalleryItem);
+        }
+
+        private void EnterCreateAlbumMode()
+        {
+            IsCreatingAlbum = true;
+
+            NewAlbumTitle = string.Empty;
+        }
+
+        private void SaveAlbum()
+        {
+            IsCreatingAlbum = false;
         }
 
         private void CreateAlbum()

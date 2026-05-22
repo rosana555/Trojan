@@ -2,10 +2,10 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <ItemGroup>
-    <Compile Update="UI\Views\AlbumItem.xaml.cs">
+    <Compile Update="UI\Views\Components\AlbumItem.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="UI\Views\MainGallaryView.xaml.cs">
+    <Compile Update="UI\Views\Pages\MainGallaryView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

@@ -22,6 +22,8 @@ public sealed class HelperOverlayViewModel : ObservableObject
     private bool _isSecurityReportVisible;
     private bool _isGallaryVisible;
     private string _securityReportText = string.Empty;
+    private GalleryViewModel _gallery;
+
     public Uri AvatarGif =>
         new Uri(
             "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
@@ -32,6 +34,11 @@ public sealed class HelperOverlayViewModel : ObservableObject
         set => SetProperty(ref _isNoteVisible, value);
     }
 
+    public GalleryViewModel Gallery
+    {
+        get => _gallery;
+        set => SetProperty(ref _gallery, value);
+    }
     public bool IsHistoryVisible
     {
         get => _isHistoryVisible;
@@ -97,7 +104,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
     {
         Main = new MainViewModel();
         ToggleBubblesCommand = new RelayCommand(ToggleBubbles);
-
+        Gallery = new GalleryViewModel();
         OpenNoteCommand = new RelayCommand(OpenNote);
         OpenGallaryCommand = new RelayCommand(OpenGallary);
         OpenNoteForNoteCommand = new RelayCommand<Note>(OpenNoteForNote);
@@ -307,7 +314,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             JokeText = _jokes[_currentJokeIndex];
         }
     }
-    
+
     private int _currentJokeIndex = 0;
 
 
@@ -387,5 +394,5 @@ public sealed class HelperOverlayViewModel : ObservableObject
             FactText = _facts[_currentFactIndex];
         }
     }
-   
+
 }

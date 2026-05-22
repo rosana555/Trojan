@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
-namespace Trojan.UI.Views
+namespace Trojan.UI.Views.Components
 {
     public partial class AlbumItem : UserControl
     {
@@ -51,8 +51,10 @@ namespace Trojan.UI.Views
             if (e.NewValue is not string path)
                 return;
 
+            var uri = new Uri(path, UriKind.Relative);
+
             ((AlbumItem)d).AlbumImageControl.Source =
-                new BitmapImage(new System.Uri(path));
+                new BitmapImage(uri);
         }
 
         public int ImageCount

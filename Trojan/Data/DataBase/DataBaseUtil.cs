@@ -194,7 +194,6 @@ namespace Trojan.Data.DataBase
                 album.Contents.Add(image);
             }
 
-            // AUTO THUMBNAIL
             if (album.Thumbnail == null)
             {
                 album.Thumbnail = image;
@@ -225,7 +224,6 @@ namespace Trojan.Data.DataBase
 
             album.Contents.Remove(image);
 
-            // UPDATE THUMBNAIL
             if (album.Thumbnail?.Id == image.Id)
             {
                 album.Thumbnail = album.Contents.FirstOrDefault();
