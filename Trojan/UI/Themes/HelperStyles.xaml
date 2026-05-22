@@ -121,4 +121,24 @@
 
 
 	</Style>
+
+    <!-- Gallery Styles -->
+    <Style x:Key="GalleryImageItemStyle" TargetType="Border">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="Margin" Value="0,0,0,12" />
+    </Style>
+
+    <Style x:Key="GalleryButtonStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Background" Value="{StaticResource GalleryButtonBackgroundBrush}" />
+    </Style>
+
+    <Style x:Key="GalleryContentStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource GalleryContentBackgroundBrush}" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
 </ResourceDictionary>

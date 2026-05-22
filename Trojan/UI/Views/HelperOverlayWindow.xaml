@@ -5,8 +5,8 @@
 		xmlns:gif="clr-namespace:WpfAnimatedGif;assembly=WpfAnimatedGif"  
 		xmlns:Views="clr-namespace:Trojan.UI.Views" 
 		Title="HelperOverlayWindow"
-        Width="850"
-		Height="620"
+        Width="1300"
+		Height="800"
         ResizeMode="NoResize"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -23,12 +23,11 @@
 			<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 		</Window.Resources>
 
-		<Grid Background="Transparent">
-
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="560"/>
-				<ColumnDefinition Width="240"/>
-			</Grid.ColumnDefinitions>
+    <Grid Background="Transparent">
+        <Grid.ColumnDefinitions>
+				<ColumnDefinition Width="1000" />
+				<ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
 
 
 			<Image Grid.Column="1"
@@ -44,13 +43,13 @@
 			/>
 
 			<!-- Notepad  -->
-			<Views:NotePadPanel Grid.Column="0"/>
+			<Views:NotePadPanel Grid.Column="0" HorizontalAlignment="Right"/>
 			
             <!-- Gallary  -->
-			<Views:MainGallaryView Grid.Column="0"/>
+			<Views:MainGallaryView Grid.Column="0" HorizontalAlignment="Right"/>
 
 			<!-- Jokes -->
-			<Border Grid.Column="0"
+			<Border Grid.Column="0" HorizontalAlignment="Right"
 				Width="320"
 				Height="300"
 				Background="#F7F2F8"
@@ -184,7 +183,7 @@
 
 
 
-			<Border Grid.Column="0"
+			<Border Grid.Column="0" HorizontalAlignment="Right"
 				Width="320"
 				Height="300"
 				Background="#F7F2F8"
@@ -349,7 +348,8 @@
 				<Button Style="{StaticResource HelperCircleButtonStyle}"
 						Command="{Binding ToggleBubblesCommand}" />
 			</StackPanel>
-        <Border Grid.Column="0"
+        <Border Grid.Column="0" 
+        HorizontalAlignment="Right"
         Width="360"
         Height="280"
         Background="#F7F2F8"
