@@ -156,6 +156,15 @@ public partial class NotePadPanel : UserControl
     {
         EditingCommands.ToggleBullets.Execute(null, NoteContentRichTextBox);
     }
+    private void NumberedListButton_Click(object sender, RoutedEventArgs e)
+    {
+        EditingCommands.ToggleNumbering.Execute(null, NoteContentRichTextBox);
+    }
+    private void UnderlineButton_Clic1k(object sender, RoutedEventArgs e)
+    {
+        EditingCommands.ToggleUnderline.Execute(null, NoteContentRichTextBox);
+    }
+    
 
     private void NotesHistoryListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
