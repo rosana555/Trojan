@@ -6,6 +6,7 @@ using System.Windows.Media;
 using Trojan.Core.Base;
 using Trojan.Core.Interface;
 using Trojan.Core.Models;
+using Trojan.Services.Logger;
 
 namespace Trojan.UI.ViewModels;
 
@@ -19,6 +20,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
     private bool _isJokeVisible;
     private bool _isFactVisible;
     private bool _isSecurityReportVisible;
+    private bool _isGallaryVisible;
     private string _securityReportText = string.Empty;
     public Uri AvatarGif =>
         new Uri(
@@ -35,6 +37,12 @@ public sealed class HelperOverlayViewModel : ObservableObject
         get => _isHistoryVisible;
         set => SetProperty(ref _isHistoryVisible, value);
 
+    }
+
+    public bool IsGallaryVisible
+    {
+        get => _isGallaryVisible;
+        set => SetProperty(ref _isGallaryVisible, value);
     }
     public bool AreBubblesVisible
     {
@@ -68,6 +76,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
     }
     public ICommand ToggleBubblesCommand { get; }
     public ICommand OpenNoteCommand { get; }
+    public ICommand OpenGallaryCommand { get; }
     public ICommand OpenNoteForNoteCommand { get; }
     public ICommand OpenHistoryCommand { get; }
     public ICommand OpenJokeCommand { get; }
@@ -90,6 +99,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
         ToggleBubblesCommand = new RelayCommand(ToggleBubbles);
 
         OpenNoteCommand = new RelayCommand(OpenNote);
+        OpenGallaryCommand = new RelayCommand(OpenGallary);
         OpenNoteForNoteCommand = new RelayCommand<Note>(OpenNoteForNote);
         OpenHistoryCommand = new RelayCommand(OpenHistory);
 
@@ -129,6 +139,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsJokeVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
+            IsGallaryVisible = false;
         }
     }
 
@@ -143,6 +154,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsJokeVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
+            IsGallaryVisible = false;
         }
     }
 
@@ -156,6 +168,22 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
+            IsGallaryVisible = false;
+        }
+    }
+
+    private void OpenGallary()
+    {
+        AppLog.Info($"OpenGallary called! Current IsGallaryVisible: {IsGallaryVisible}");
+        IsGallaryVisible = !IsGallaryVisible;
+        AppLog.Info($"After toggle IsGallaryVisible: {IsGallaryVisible}");
+        if (IsGallaryVisible)
+        {
+            IsJokeVisible = false;
+            IsHistoryVisible = false;
+            IsFactVisible = false;
+            IsSecurityReportVisible = false;
+            IsNoteVisible = false;
         }
     }
 
@@ -169,6 +197,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsJokeVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
+            IsGallaryVisible = false;
         }
     }
 

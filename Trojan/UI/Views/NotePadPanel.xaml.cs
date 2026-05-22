@@ -8,7 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Trojan.UI.ViewModels;
 
-namespace Trojan.Views;
+namespace Trojan.UI.Views;
 
 public partial class NotePadPanel : UserControl
 {

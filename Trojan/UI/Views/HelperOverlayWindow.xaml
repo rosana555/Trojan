@@ -3,8 +3,7 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
 		xmlns:gif="clr-namespace:WpfAnimatedGif;assembly=WpfAnimatedGif"  
-		xmlns:notepad="clr-namespace:Trojan.Views"
-        
+		xmlns:Views="clr-namespace:Trojan.UI.Views" 
 		Title="HelperOverlayWindow"
         Width="850"
 		Height="620"
@@ -45,7 +44,10 @@
 			/>
 
 			<!-- Notepad  -->
-			<notepad:NotePadPanel Grid.Column="0" />
+			<Views:NotePadPanel Grid.Column="0"/>
+			
+            <!-- Gallary  -->
+			<Views:MainGallaryView Grid.Column="0"/>
 
 			<!-- Jokes -->
 			<Border Grid.Column="0"
@@ -334,6 +336,13 @@
 							Background="Transparent"
 							BorderThickness="0"
 							FontSize="16"/>	
+					</Border>
+					<Border Style="{StaticResource HelperBubbleStyle}">
+						<Button Content="Galerija"
+							Command="{Binding OpenGallaryCommand}"
+							Background="Transparent"
+							BorderThickness="0"
+							FontSize="16"/>
 					</Border>
             </StackPanel>
 
