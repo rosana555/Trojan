@@ -140,23 +140,34 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Click="BoldButton_Click" />
+                    <Button Content="I"
+				            FontStyle="Italic"
+				            Width="32"
+                            Height="32"
+				            Background="Transparent"
+                            BorderThickness="0"
+                            Click="ItalicButton_Click"/>
 
                     <Button Content="☰"
+                        Width="32"
+                        Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="BulletListButton_Click" />
+
+                    <Button Content="1."
+                        Width="32"
+                        Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="NumberedListButton_Click" />       
+                    
+                    <Button Content="_"
                             Width="32"
                             Height="32"
                             Background="Transparent"
                             BorderThickness="0"
-                            Click="BulletListButton_Click" />
-					
-					<Button Content="I"
-							FontStyle="Italic"
-							Width="32"
-			                Height="32"
-							Background="Transparent"
-                            BorderThickness="0"
-			                Click="ItalicButton_Click"/>	
-					
-					
+                            Click="UnderlineButton_Clic1k" />       
 
                     <ComboBox x:Name="TableSizeComboBox"
                               Width="86"
