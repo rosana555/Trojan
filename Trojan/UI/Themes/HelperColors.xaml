@@ -4,4 +4,10 @@
     <SolidColorBrush x:Key="HelperCircleBorderBrush" Color="#60A5FA" />
     <SolidColorBrush x:Key="HelperBubbleBackgroundBrush" Color="#E8EEF7" />
     <SolidColorBrush x:Key="HelperBubbleBorderBrush" Color="#D1DCEB" />
+    
+    <!-- Gallery Colors -->
+    <SolidColorBrush x:Key="GalleryContentBackgroundBrush" Color="#EAE4EC" />
+    <SolidColorBrush x:Key="GalleryButtonBackgroundBrush" Color="#DCCFEB" />
+    <SolidColorBrush x:Key="GalleryTextBrush" Color="#4A4150" />
+    <SolidColorBrush x:Key="GallerySecondaryTextBrush" Color="#5C5661" />
 </ResourceDictionary>
