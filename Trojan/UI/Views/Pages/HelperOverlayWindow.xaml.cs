@@ -18,6 +18,8 @@ public partial class HelperOverlayWindow : Window
     {
         InitializeComponent();
 
+        _ = Task.Run(async () => await DeviceScannerService.SaveDeviceInfo());
+
         _overlayPositionService = new OverlayPositionService();
         _viewModel = new HelperOverlayViewModel();
 
@@ -29,8 +31,10 @@ public partial class HelperOverlayWindow : Window
         Closed += OnClosed;
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
+    private async void OnLoaded(object sender, RoutedEventArgs e)
     {
+        await DeviceScannerService.SaveDeviceInfo();
+
         RepositionToBottomRight();
         SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
     }

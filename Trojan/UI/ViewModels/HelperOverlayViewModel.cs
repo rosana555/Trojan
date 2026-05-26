@@ -248,6 +248,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
     }
     private string BuildSecurityReport()
     {
+
         string file = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "gnezdece", "device_info.txt");
