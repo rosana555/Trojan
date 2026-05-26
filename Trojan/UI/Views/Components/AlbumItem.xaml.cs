@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.IO;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
@@ -48,13 +50,19 @@ namespace Trojan.UI.Views.Components
             DependencyObject d,
             DependencyPropertyChangedEventArgs e)
         {
-            if (e.NewValue is not string path)
+            if (e.NewValue is not string path ||
+                string.IsNullOrWhiteSpace(path))
+            {
+                ((AlbumItem)d).AlbumImageControl.Source = null;
                 return;
+            }
 
-            var uri = new Uri(path, UriKind.Relative);
+            var uriKind = Path.IsPathFullyQualified(path)
+                ? UriKind.Absolute
+                : UriKind.Relative;
 
             ((AlbumItem)d).AlbumImageControl.Source =
-                new BitmapImage(uri);
+                new BitmapImage(new Uri(path, uriKind));
         }
 
         public int ImageCount

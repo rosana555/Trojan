@@ -240,7 +240,8 @@
                                     FontWeight="SemiBold"
                                     Background="Transparent"
                                     BorderThickness="0"
-                                    Cursor="Hand"/>
+                                    Cursor="Hand"
+                                    Click="UploadImageButton_Click"/>
 
                         </Border>
 
@@ -255,9 +256,8 @@
                             BorderBrush="#ECECEC"
                             BorderThickness="1">
 
-                        <!-- HARDCODED IMAGE -->
                         <Image Stretch="UniformToFill"
-                               Source="/Trojan;component/UI/Assets/TestImages/image2.jpg"/>
+                               Source="{Binding PendingImagePath}"/>
 
                     </Border>
 
@@ -277,7 +277,8 @@
                                  BorderThickness="0"
                                  FontSize="15"
                                  Foreground="#444"
-                                 Text="Type description..."
+                                 Text="{Binding PendingImageDescription, UpdateSourceTrigger=PropertyChanged}"
+                                 ToolTip="Type description..."
                                  CaretBrush="#444"/>
 
                     </Border>
@@ -304,7 +305,8 @@
                                     FontWeight="SemiBold"
                                     Background="Transparent"
                                     BorderThickness="0"
-                                    Cursor="Hand"/>
+                                    Cursor="Hand"
+                                    Click="SaveAddImageButton_Click"/>
 
                         </Border>
 

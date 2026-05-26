@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -73,13 +75,19 @@ namespace Trojan.UI.Views.Components
         {
             var control = (GalleryImageItem)d;
 
-            if (e.NewValue is string path &&
-                !string.IsNullOrEmpty(path))
+            if (e.NewValue is not string path ||
+                string.IsNullOrWhiteSpace(path))
             {
-                control.ImageSource.Source =
-                    new BitmapImage(
-                        new Uri(path, UriKind.Relative));
+                control.ImageSource.Source = null;
+                return;
             }
+
+            var uriKind = Path.IsPathFullyQualified(path)
+                ? UriKind.Absolute
+                : UriKind.Relative;
+
+            control.ImageSource.Source =
+                new BitmapImage(new Uri(path, uriKind));
         }
 
         private static void OnImageDateChanged(

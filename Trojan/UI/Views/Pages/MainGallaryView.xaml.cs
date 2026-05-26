@@ -1,18 +1,25 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
+using Trojan.Core.Models;
 using Trojan.Services.Logger;
 using Trojan.UI.ViewModels;
 using Trojan.UI.Views.Components;
-using System.Windows.Media;
+
 namespace Trojan.UI.Views.Pages
 {
     public partial class MainGallaryView : UserControl
     {
-        private GalleryImageItem? _selectedImage;
+        private const string PlaceholderAlbumImage =
+            "/Trojan;component/UI/Assets/TestImages/image1.jpg";
 
         private GalleryImageItem? _thumbnailImage;
         private bool _isSelectingThumbnail;
+
         public MainGallaryView()
         {
             InitializeComponent();
@@ -24,6 +31,7 @@ namespace Trojan.UI.Views.Pages
         {
             if (DataContext is GalleryViewModel vm)
             {
+                vm.PropertyChanged -= Vm_PropertyChanged;
                 vm.PropertyChanged += Vm_PropertyChanged;
             }
 
@@ -56,120 +64,97 @@ namespace Trojan.UI.Views.Pages
                 return;
 
             vm.IsInsideAlbum = false;
+            vm.SelectedAlbum = null;
 
             GalleryTitle.Text = "Albums";
 
             GalleryPanel.Children.Clear();
 
-            AddAlbum(
-                "Vacation",
-                "/Trojan;component/UI/Assets/TestImages/image1.jpg",
-                12);
-
-            AddAlbum(
-                "Nature",
-                "/Trojan;component/UI/Assets/TestImages/image2.jpg",
-                8);
-
-            AddAlbum(
-                "Family",
-                "/Trojan;component/UI/Assets/TestImages/image3.jpg",
-                16);
-
-            AddAlbum(
-                "Work",
-                "/Trojan;component/UI/Assets/TestImages/image4.jpg",
-                5);
+            foreach (var album in vm.Albums)
+            {
+                AddAlbum(album);
+            }
         }
 
         private void LoadCreateAlbumMode()
         {
+            if (DataContext is not GalleryViewModel vm)
+                return;
+
             GalleryTitle.Text = "Ustvarjanje albuma";
 
             GalleryPanel.Children.Clear();
 
-            AddImage(
-                "/Trojan;component/UI/Assets/TestImages/image1.jpg",
-                "datum: 1.8.1924");
-
-            AddImage(
-                "/Trojan;component/UI/Assets/TestImages/image2.jpg",
-                "datum: 4.8.1924");
-
-            AddImage(
-                "/Trojan;component/UI/Assets/TestImages/image3.jpg",
-                "datum: 12.8.1924");
-
-            AddImage(
-                "/Trojan;component/UI/Assets/TestImages/image4.jpg",
-                "datum: 17.8.1924");
+            foreach (var galleryItem in vm.GalleryItems)
+            {
+                AddImage(galleryItem);
+            }
         }
 
-        private void AddAlbum(string title, string image, int count)
+        private void AddAlbum(Album album)
         {
-            var album = new AlbumItem
+            var albumItem = new AlbumItem
             {
                 Width = 220,
                 Height = 260,
-                AlbumTitle = title,
-                AlbumImage = image,
-                ImageCount = count,
+                AlbumTitle = album.Title,
+                AlbumImage = ResolveImagePath(
+                    album.Thumbnail?.FilePath
+                    ?? album.Contents.FirstOrDefault()?.FilePath
+                    ?? PlaceholderAlbumImage),
+                ImageCount = album.Contents.Count,
+                Tag = album,
                 Margin = new Thickness(10)
             };
 
-            album.MouseDoubleClick += Album_MouseDoubleClick;
+            albumItem.MouseDoubleClick += Album_MouseDoubleClick;
 
-            GalleryPanel.Children.Add(album);
+            GalleryPanel.Children.Add(albumItem);
         }
 
         private void Album_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (sender is not AlbumItem album)
+            if (sender is not AlbumItem albumItem ||
+                albumItem.Tag is not Album album)
                 return;
 
             AppLog.Info(
-                $"Opened album: {album.AlbumTitle}");
+                $"Opened album: {album.Title}");
 
-            OpenAlbum(album.AlbumTitle);
+            OpenAlbum(album);
         }
 
-        private void OpenAlbum(string title)
+        private void OpenAlbum(Album album)
         {
-            if (DataContext is GalleryViewModel vm)
-            {
-                vm.IsInsideAlbum = true;
-            }
+            if (DataContext is not GalleryViewModel vm)
+                return;
 
-            GalleryTitle.Text = title;
+            var selectedAlbum = vm.Albums.FirstOrDefault(
+                a => a.Id == album.Id) ?? album;
+
+            vm.IsInsideAlbum = true;
+            vm.SelectedAlbum = selectedAlbum;
+
+            GalleryTitle.Text = selectedAlbum.Title;
 
             GalleryPanel.Children.Clear();
 
-            AddImage(
-                "/Trojan;component/UI/Assets/TestImages/image1.jpg",
-                "datum: 1.8.1924");
-
-            AddImage(
-                "/Trojan;component/UI/Assets/TestImages/image2.jpg",
-                "datum: 4.8.1924");
-
-            AddImage(
-                "/Trojan;component/UI/Assets/TestImages/image3.jpg",
-                "datum: 12.8.1924");
-
-            AddImage(
-                "/Trojan;component/UI/Assets/TestImages/image4.jpg",
-                "datum: 17.8.1924");
+            foreach (var galleryItem in selectedAlbum.Contents)
+            {
+                AddImage(galleryItem);
+            }
         }
 
-        private void AddImage(string path, string date)
+        private void AddImage(GalleryItem galleryItem)
         {
             var imageItem = new GalleryImageItem
             {
                 Width = 220,
                 Height = 220,
                 Margin = new Thickness(10),
-                ImagePath = path,
-                ImageDate = date
+                ImagePath = ResolveImagePath(galleryItem.FilePath),
+                ImageDate = $"datum: {galleryItem.AddedAt.ToLocalTime():d.M.yyyy}",
+                Tag = galleryItem
             };
 
             imageItem.MouseLeftButtonDown +=
@@ -276,16 +261,16 @@ namespace Trojan.UI.Views.Pages
             // SAVE
             if (vm.IsCreatingAlbum)
             {
-                vm.IsCreatingAlbum = false;
-
+                vm.SaveAlbumCommand.Execute(null);
                 LoadAlbums();
-
                 return;
             }
 
             // ADD IMAGE
             if (vm.IsInsideAlbum)
             {
+                vm.SetPendingImagePath(string.Empty);
+                vm.PendingImageDescription = string.Empty;
                 vm.IsAddingImage = true;
             }
         }
@@ -295,8 +280,83 @@ namespace Trojan.UI.Views.Pages
         {
             if (DataContext is GalleryViewModel vm)
             {
-                vm.IsAddingImage = false;
+                vm.CancelAddImageCommand.Execute(null);
             }
+        }
+
+        private void UploadImageButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (DataContext is not GalleryViewModel vm)
+                return;
+
+            var dialog = new OpenFileDialog
+            {
+                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp",
+                CheckFileExists = true,
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                vm.SetPendingImagePath(dialog.FileName);
+            }
+        }
+
+        private void SaveAddImageButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (DataContext is not GalleryViewModel vm)
+                return;
+
+            try
+            {
+                if (!vm.TrySavePendingImage())
+                {
+                    MessageBox.Show(
+                        "Najprej izberi sliko za nalaganje.",
+                        "Upload image",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                    return;
+                }
+
+                if (vm.SelectedAlbum != null)
+                {
+                    OpenAlbum(vm.SelectedAlbum);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Shranjevanje slike ni uspelo: {ex.Message}",
+                    "Upload image",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private static string ResolveImagePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return PlaceholderAlbumImage;
+
+            if (Path.IsPathFullyQualified(path))
+                return path;
+
+            if (path.StartsWith(
+                    "/Trojan;component/",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return path;
+            }
+
+            var normalizedPath = path.Replace('\\', '/').TrimStart('/');
+
+            return $"/Trojan;component/{normalizedPath}";
         }
     }
 }
