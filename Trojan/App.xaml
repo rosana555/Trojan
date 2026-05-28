@@ -5,8 +5,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Themes/HelperColors.xaml" />
-                <ResourceDictionary Source="Themes/HelperStyles.xaml" />
+                <ResourceDictionary Source="UI/Themes/HelperColors.xaml" />
+                <ResourceDictionary Source="UI/Themes/HelperStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
