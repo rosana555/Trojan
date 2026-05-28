@@ -7,6 +7,15 @@
     </Compile>
     <Compile Update="UI\Views\Pages\MainGallaryView.xaml.cs">
       <SubType>Code</SubType>
+    </Compile> 
+    <Compile Update="Views\BlackScreenWindow.xaml.cs">
+       <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\FakeLoginWindow.xaml.cs">
+        <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\ImageOverlayWindow.xaml.cs">
+        <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
 </Project>
