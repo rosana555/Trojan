@@ -29,7 +29,6 @@
             <ColumnDefinition Width="300"/>
         </Grid.ColumnDefinitions>
 
-
         <Image Grid.Column="1"
 			   Width="80"
 			   Height="80"
@@ -39,8 +38,7 @@
 			   Stretch="Uniform"
 			   Panel.ZIndex="999"
 			   IsHitTestVisible="False"
-			   gif:ImageBehavior.AnimatedSource="{Binding AvatarGif}"
-			/>
+			   gif:ImageBehavior.AnimatedSource="{Binding AvatarGif}"/>
 
         <!-- Notepad  -->
         <pages:NotePadPanel Grid.Column="0" HorizontalAlignment="Right"/>
@@ -62,127 +60,55 @@
 				Visibility="{Binding IsJokeVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <Border.Effect>
-                <DropShadowEffect BlurRadius="18"
-									  ShadowDepth="4"
-									  Opacity="0.18"/>
+                <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
             </Border.Effect>
 
             <Border.RenderTransform>
-                <ScaleTransform ScaleX="0.9"
-									ScaleY="0.9"/>
+                <ScaleTransform ScaleX="0.9" ScaleY="0.9"/>
             </Border.RenderTransform>
 
             <StackPanel>
-
-                <TextBlock Text="&#352;ale"
-							   FontSize="36"
-							   FontWeight="SemiBold"
-							   Margin="0,0,0,20"/>
-
-                <TextBlock Text="{Binding JokeText}"
-							   TextWrapping="Wrap"
-							   FontSize="18"
-							   Foreground="#514B56"
-							   LineHeight="28"
-							   Margin="0,0,0,28"/>
-
+                <TextBlock Text="Šale" FontSize="36" FontWeight="SemiBold" Margin="0,0,0,20"/>
+                <TextBlock Text="{Binding JokeText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28" Margin="0,0,0,28"/>
                 <Grid>
-
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-
-                    <Button Grid.Column="0"
-								Content="Nazaj"
-								Command="{Binding PreviousJokeCommand}"
-								Background="Transparent"
-								BorderThickness="0"
-								FontSize="18"
-								FontWeight="SemiBold"
-								Foreground="#7A5AC8"/>
-
-                    <Button Grid.Column="1"
-								Content="Naprej"
-								Command="{Binding NextJokeCommand}"
-								Background="Transparent"
-								BorderThickness="0"
-								FontSize="18"
-								FontWeight="SemiBold"
-								Foreground="#7A5AC8" RenderTransformOrigin="0.5,0.5">
-                        <Button.RenderTransform>
-                            <TransformGroup>
-                                <ScaleTransform/>
-                                <SkewTransform/>
-                                <RotateTransform Angle="-4.789"/>
-                                <TranslateTransform/>
-                            </TransformGroup>
-                        </Button.RenderTransform>
-                    </Button>
+                    <Button Grid.Column="0" Content="Nazaj" Command="{Binding PreviousJokeCommand}" Background="Transparent" BorderThickness="0" FontSize="18" FontWeight="SemiBold" Foreground="#7A5AC8"/>
+                    <Button Grid.Column="1" Content="Naprej" Command="{Binding NextJokeCommand}" Background="Transparent" BorderThickness="0" FontSize="18" FontWeight="SemiBold" Foreground="#7A5AC8"/>
                 </Grid>
-
             </StackPanel>
 
             <Border.Style>
                 <Style TargetType="Border">
-
                     <Style.Triggers>
-
                         <DataTrigger Binding="{Binding IsJokeVisible}" Value="True">
-
                             <DataTrigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
-															 To="1"
-															 Duration="0:0:0.25"/>
-
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-															 To="1"
-															 Duration="0:0:0.25"/>
-
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-															 To="1"
-															 Duration="0:0:0.25"/>
-
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.25"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.25"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.25"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </DataTrigger.EnterActions>
-
                             <DataTrigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
-															 To="0"
-															 Duration="0:0:0.2"/>
-
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-															 To="0.92"
-															 Duration="0:0:0.2"/>
-
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-															 To="0.92"
-															 Duration="0:0:0.2"/>
-
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)" To="0.92" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="0.92" Duration="0:0:0.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </DataTrigger.ExitActions>
-
                         </DataTrigger>
-
                     </Style.Triggers>
-
                 </Style>
             </Border.Style>
-
-
-
         </Border>
 
-
-
+        <!-- Facts -->
         <Border Grid.Column="0" HorizontalAlignment="Right"
 				Width="320"
 				Height="300"
@@ -195,197 +121,147 @@
 				Visibility="{Binding IsFactVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <Border.Effect>
-                <DropShadowEffect BlurRadius="18"
-										  ShadowDepth="4"
-										  Opacity="0.18"/>
+                <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
             </Border.Effect>
 
             <StackPanel>
-
-                <TextBlock Text="Zanimivosti"
-								   FontSize="36"
-								   FontWeight="SemiBold"
-								   Margin="0,0,0,20"/>
-
-                <TextBlock Text="{Binding FactText}"
-								   TextWrapping="Wrap"
-								   FontSize="18"
-								   Foreground="#514B56"
-								   LineHeight="28"
-								   Margin="0,0,0,28"/>
-
+                <TextBlock Text="Zanimivosti" FontSize="36" FontWeight="SemiBold" Margin="0,0,0,20"/>
+                <TextBlock Text="{Binding FactText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28" Margin="0,0,0,28"/>
                 <Grid>
-
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-
-                    <Button Grid.Column="0"
-									Content="Nazaj"
-									Command="{Binding PreviousFactCommand}"
-									Background="Transparent"
-									BorderThickness="0"
-									FontSize="18"
-									FontWeight="SemiBold"
-									Foreground="#7A5AC8"/>
-
-                    <Button Grid.Column="1"
-									Content="Naprej"
-									Command="{Binding NextFactCommand}"
-									Background="Transparent"
-									BorderThickness="0"
-									FontSize="18"
-									FontWeight="SemiBold"
-									Foreground="#7A5AC8"/>
+                    <Button Grid.Column="0" Content="Nazaj" Command="{Binding PreviousFactCommand}" Background="Transparent" BorderThickness="0" FontSize="18" FontWeight="SemiBold" Foreground="#7A5AC8"/>
+                    <Button Grid.Column="1" Content="Naprej" Command="{Binding NextFactCommand}" Background="Transparent" BorderThickness="0" FontSize="18" FontWeight="SemiBold" Foreground="#7A5AC8"/>
                 </Grid>
-
             </StackPanel>
-
-
-
         </Border>
+
+        <!-- Bubble buttons -->
         <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,20">
-
             <StackPanel Margin="0,0,56,12"
-							Opacity="0"
-							RenderTransformOrigin="0.5,1"
-							Visibility="{Binding AreBubblesVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-
+						Opacity="0"
+						RenderTransformOrigin="0.5,1"
+						Visibility="{Binding AreBubblesVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel.RenderTransform>
-                    <ScaleTransform ScaleX="0.8"
-										ScaleY="0.8"/>
+                    <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
                 </StackPanel.RenderTransform>
-
                 <StackPanel.Style>
                     <Style TargetType="StackPanel">
-
                         <Style.Triggers>
-
                             <DataTrigger Binding="{Binding AreBubblesVisible}" Value="True">
-
                                 <DataTrigger.EnterActions>
                                     <BeginStoryboard>
                                         <Storyboard>
-
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
-																 To="1"
-																 Duration="0:0:0.2"/>
-
-                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-																 To="1"
-																 Duration="0:0:0.2"/>
-
-                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-																 To="1"
-																 Duration="0:0:0.2"/>
-
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </BeginStoryboard>
                                 </DataTrigger.EnterActions>
-
                                 <DataTrigger.ExitActions>
                                     <BeginStoryboard>
                                         <Storyboard>
-
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
-																 To="0"
-																 Duration="0:0:0.15"/>
-
-                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-																 To="0.8"
-																 Duration="0:0:0.15"/>
-
-                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-																 To="0.8"
-																 Duration="0:0:0.15"/>
-
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)" To="0.8" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="0.8" Duration="0:0:0.15"/>
                                         </Storyboard>
                                     </BeginStoryboard>
                                 </DataTrigger.ExitActions>
-
                             </DataTrigger>
-
                         </Style.Triggers>
-
                     </Style>
                 </StackPanel.Style>
 
                 <Border Style="{StaticResource HelperBubbleStyle}">
-                    <Button Content="Bele&#382;ka"
-								Command="{Binding OpenNoteCommand}"
-								Background="Transparent"
-								BorderThickness="0"
-								FontSize="16"/>
-                </Border>
-
-                <Border Style="{StaticResource HelperBubbleStyle}">
-                    <Button Content="&#352;ale" Command="{Binding OpenJokeCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
+                    <Button Content="Beležka" Command="{Binding OpenNoteCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
                 <Border Style="{StaticResource HelperBubbleStyle}">
-                    <Button Content="Zanimivosti"
-								Command="{Binding OpenFactCommand}"
-								Background="Transparent"
-								BorderThickness="0"
-								FontSize="16"/>
+                    <Button Content="Šale" Command="{Binding OpenJokeCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
                 <Border Style="{StaticResource HelperBubbleStyle}">
-                    <Button Content="Varnostno poro&#269;ilo"
-							Command="{Binding OpenSecurityReportCommand}"
-							Background="Transparent"
-							BorderThickness="0"
-							FontSize="16"/>
+                    <Button Content="Zanimivosti" Command="{Binding OpenFactCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
                 <Border Style="{StaticResource HelperBubbleStyle}">
-                    <Button Content="Galerija"
-							Command="{Binding OpenGallaryCommand}"
-							Background="Transparent"
-							BorderThickness="0"
-							FontSize="16"/>
+                    <Button Content="Varnostno poročilo" Command="{Binding OpenSecurityReportCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
+                </Border>
+                <Border Style="{StaticResource HelperBubbleStyle}">
+                    <Button Content="Galerija" Command="{Binding OpenGallaryCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
             </StackPanel>
-
-            <Button Style="{StaticResource HelperCircleButtonStyle}"
-						Command="{Binding ToggleBubblesCommand}" />
+            <Button Style="{StaticResource HelperCircleButtonStyle}" Command="{Binding ToggleBubblesCommand}" />
         </StackPanel>
+
+        <!-- Security Report -->
         <Border Grid.Column="0" 
-        HorizontalAlignment="Right"
-        Width="360"
-        Height="280"
-        Background="#F7F2F8"
-        CornerRadius="18"
-        Padding="24"
-        Margin="20"
-        VerticalAlignment="Center"
-        Style="{StaticResource AnimatedPanelStyle}"
-        Visibility="{Binding IsSecurityReportVisible, 
-                     Converter={StaticResource BooleanToVisibilityConverter}}">
+                HorizontalAlignment="Right"
+                Width="360"
+                Height="420"
+                Background="#F7F2F8"
+                CornerRadius="18"
+                Padding="24"
+                Margin="20"
+                VerticalAlignment="Center"
+                Style="{StaticResource AnimatedPanelStyle}"
+                Visibility="{Binding IsSecurityReportVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <Border.Effect>
                 <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
             </Border.Effect>
 
             <StackPanel>
+                <TextBlock Text="⚠️ Zaznano na tvojem računalniku"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="#A0522D"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,16"/>
 
-                <TextBlock Text="? Zaznano na tvojem ra&#269;unalniku"
-                   FontSize="18"
-                   FontWeight="SemiBold"
-                   Foreground="#A0522D"
-                   TextWrapping="Wrap"
-                   Margin="0,0,0,16"/>
+                <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                    <TextBlock Text="{Binding SecurityReportText}"
+                               TextWrapping="Wrap"
+                               FontSize="13"
+                               Foreground="#514B56"
+                               LineHeight="22"
+                               FontFamily="Consolas"/>
+                </ScrollViewer>
 
-                <TextBlock Text="{Binding SecurityReportText}"
-                   TextWrapping="Wrap"
-                   FontSize="13"
-                   Foreground="#514B56"
-                   LineHeight="22"
-                   FontFamily="Consolas"
-                   Margin="0,0,0,16"/>
-
-
+                <Button Content="🔓 DEŠIFRIRAJ DATOTEKE"
+                        Command="{Binding UnlockFolderCommand}"
+                        Margin="0,16,0,0"
+                        Padding="12,10"
+                        Background="#FF6B6B"
+                        Foreground="White"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        BorderThickness="0"
+                        Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#FF6B6B"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#E05555"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#CC4444"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </StackPanel>
-
         </Border>
     </Grid>
-
 </Window>

