@@ -20,7 +20,10 @@ namespace Trojan.Services
 
         public void Start()
         {
-            _running = true;
+            if (!App._devMode)
+            {
+                _running = true;   
+            }
 
             Task.Run(async () =>
             {
