@@ -36,6 +36,22 @@ namespace Trojan.UI.ViewModels
         }
         private bool _isCreatingAlbum;
 
+        private bool _isCreatingCollage;
+
+        public bool IsCreatingCollage
+        {
+            get => _isCreatingCollage;
+            set
+            {
+                _isCreatingCollage = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsCreatingAnything));
+            }
+        }
+
+        public bool IsCreatingAnything =>
+            IsCreatingAlbum || IsCreatingCollage;
+
         public bool IsCreatingAlbum
         {
             get => _isCreatingAlbum;

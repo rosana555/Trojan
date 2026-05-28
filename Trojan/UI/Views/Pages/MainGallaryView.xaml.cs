@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Win32;
 using Trojan.Core.Models;
+using Trojan.Data.DataBase;
 using Trojan.Services.Logger;
 using Trojan.UI.ViewModels;
 using Trojan.UI.Views.Components;
@@ -20,11 +23,173 @@ namespace Trojan.UI.Views.Pages
         private GalleryImageItem? _thumbnailImage;
         private bool _isSelectingThumbnail;
 
+
         public MainGallaryView()
         {
             InitializeComponent();
 
             Loaded += MainGallaryView_Loaded;
+
+
+        }
+
+
+        private void CreateCollage()
+        {
+            if (DataContext is not GalleryViewModel vm)
+                return;
+
+            var selectedImages = GalleryPanel.Children
+                .OfType<GalleryImageItem>()
+                .Where(i => i.IsSelected)
+                .ToList();
+            MessageBox.Show(
+            $"Selected images: {selectedImages.Count}");
+
+            if (selectedImages.Count == 0)
+            {
+                MessageBox.Show(
+                    "Izberi vsaj eno sliko.",
+                    "Kolaž",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return;
+            }
+
+            const int imageSize = 300;
+            const int spacing = 10;
+            const int columns = 2;
+
+            int rows = (int)Math.Ceiling(
+                selectedImages.Count / (double)columns);
+
+            int collageWidth =
+                columns * imageSize + (columns + 1) * spacing;
+
+            int collageHeight =
+                rows * imageSize + (rows + 1) * spacing;
+            string collagePath;
+            using (Bitmap collage = new Bitmap(
+                collageWidth,
+                collageHeight))
+            {
+                using Graphics graphics = Graphics.FromImage(collage);
+
+                graphics.Clear(System.Drawing.Color.White);
+
+                for (int i = 0; i < selectedImages.Count; i++)
+                {
+                    var item = selectedImages[i];
+
+                    if (item.Tag is not GalleryItem galleryItem)
+                        continue;
+
+                    //MessageBox.Show(galleryItem.FilePath);
+                    System.Drawing.Image image;
+
+                    string imagePath;
+
+                    if (Path.IsPathFullyQualified(galleryItem.FilePath))
+                    {
+                        imagePath = galleryItem.FilePath;
+                    }
+                    else
+                    {
+                        imagePath = Path.Combine(
+                            Directory.GetParent(
+                                AppDomain.CurrentDomain.BaseDirectory)!
+                                .Parent!
+                                .Parent!
+                                .Parent!
+                                .FullName,
+                            galleryItem.FilePath.Replace('/', '\\'));
+
+
+                    }
+
+                    if (!File.Exists(imagePath))
+                    {
+                        //MessageBox.Show($"Missing image: {imagePath}");
+                        continue;
+                    }
+
+                    image = System.Drawing.Image.FromFile(imagePath);
+
+                    int row = i / columns;
+                    int column = i % columns;
+
+                    int x = spacing + column * (imageSize + spacing);
+                    int y = spacing + row * (imageSize + spacing);
+
+                    graphics.DrawImage(
+                        image,
+                        new Rectangle(x, y, imageSize, imageSize));
+                }
+
+                string collageDirectory = Path.Combine(
+                    Environment.GetFolderPath(
+                        Environment.SpecialFolder.Desktop),
+                    "Collages");
+
+                Directory.CreateDirectory(collageDirectory);
+
+                collagePath = Path.Combine(
+                    collageDirectory,
+                    $"collage_{Guid.NewGuid():N}.png");
+
+                collage.Save(collagePath, ImageFormat.Png);
+            }
+
+
+            var collageItem = new GalleryItem
+            {
+                FilePath = collagePath,
+                Description = "Kolaž",
+                AddedAt = DateTime.UtcNow
+            };
+
+            DataBaseUtil.AddGalleryItem(collageItem);
+
+            if (vm.SelectedAlbum != null)
+            {
+                DataBaseUtil.AddImageToAlbum(
+                    vm.SelectedAlbum.Id,
+                    collageItem.Id);
+
+                vm.SelectedAlbum.Contents.Add(collageItem);
+            }
+
+            vm.GalleryItems.Add(collageItem);
+
+            MessageBox.Show(
+                "Kolaž uspešno ustvarjen!",
+                "Kolaž",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            vm.IsCreatingCollage = false;
+
+            LoadAlbums();
+        }
+
+
+        private void CreateCollageButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is GalleryViewModel vm)
+            {
+                vm.IsCreatingAlbum = false;
+                vm.IsCreatingCollage = true;
+
+                GalleryTitle.Text = "Ustvarjanje kolaža";
+
+                GalleryPanel.Children.Clear();
+
+                foreach (var galleryItem in vm.GalleryItems)
+                {
+                    AddImage(galleryItem);
+                }
+            }
         }
 
         private void MainGallaryView_Loaded(object sender, RoutedEventArgs e)
@@ -73,6 +238,12 @@ namespace Trojan.UI.Views.Pages
             foreach (var album in vm.Albums)
             {
                 AddAlbum(album);
+            }
+
+            foreach (var galleryItem in vm.GalleryItems
+                         .Where(g => g.Description == "Kolaž"))
+            {
+                AddImage(galleryItem);
             }
         }
 
@@ -167,8 +338,9 @@ namespace Trojan.UI.Views.Pages
         {
             if (DataContext is not GalleryViewModel vm)
                 return;
-
-            if (!vm.IsCreatingAlbum)
+            
+            if (!vm.IsCreatingAlbum &&
+                !vm.IsCreatingCollage)
                 return;
 
             if (sender is not GalleryImageItem clickedImage)
@@ -215,7 +387,8 @@ namespace Trojan.UI.Views.Pages
             if (DataContext is not GalleryViewModel vm)
                 return;
 
-            if (!vm.IsCreatingAlbum)
+            if (!vm.IsCreatingAlbum &&
+                !vm.IsCreatingCollage)
                 return;
 
             _isSelectingThumbnail = true;
@@ -236,6 +409,12 @@ namespace Trojan.UI.Views.Pages
                     LoadAlbums();
                     return;
                 }
+                if (vm.IsCreatingCollage)
+                {
+                    vm.IsCreatingCollage = false;
+                    LoadAlbums();
+                    return;
+                }
 
                 if (Window.GetWindow(this)?.DataContext
                     is HelperOverlayViewModel helperVm)
@@ -252,6 +431,7 @@ namespace Trojan.UI.Views.Pages
 
             // ENTER CREATE MODE
             if (!vm.IsCreatingAlbum &&
+                !vm.IsCreatingCollage &&
                 !vm.IsInsideAlbum)
             {
                 vm.IsCreatingAlbum = true;
@@ -263,6 +443,12 @@ namespace Trojan.UI.Views.Pages
             {
                 vm.SaveAlbumCommand.Execute(null);
                 LoadAlbums();
+                return;
+            }
+            // SAVE COLLAGE
+            if (vm.IsCreatingCollage)
+            {
+                CreateCollage();
                 return;
             }
 
@@ -345,7 +531,12 @@ namespace Trojan.UI.Views.Pages
                 return PlaceholderAlbumImage;
 
             if (Path.IsPathFullyQualified(path))
-                return path;
+            {
+                if (File.Exists(path))
+                    return path;
+
+                return PlaceholderAlbumImage;
+            }
 
             if (path.StartsWith(
                     "/Trojan;component/",
