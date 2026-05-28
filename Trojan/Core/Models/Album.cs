@@ -13,8 +13,8 @@ namespace Trojan.Core.Models
             set => SetProperty(ref _id, value);
         }
 
-        private GalleryItem _thumbnail;
-        public GalleryItem Thumbnail
+        private GalleryItem? _thumbnail;
+        public GalleryItem? Thumbnail
         {
             get => _thumbnail;
             set => SetProperty(ref _thumbnail, value);
