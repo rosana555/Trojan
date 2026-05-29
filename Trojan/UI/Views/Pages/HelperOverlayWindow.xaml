@@ -76,6 +76,9 @@
         <!-- Notepad  -->
         <pages:NotePadPanel Grid.Column="0" HorizontalAlignment="Right"/>
 
+        <!-- Calendar -->
+        <pages:CalendarPanel Grid.Column="0" HorizontalAlignment="Right" DataContext="{Binding Calendar}"/>
+        
         <!-- Gallary  -->
         <pages:MainGallaryView Grid.Column="0" HorizontalAlignment="Right" DataContext="{Binding Gallery}"/>
 
@@ -261,6 +264,9 @@
                 </Border>
                 <Border Style="{StaticResource HelperBubbleStyle}">
                     <Button Content="Galerija" Command="{Binding OpenGallaryCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
+                </Border>
+                <Border Style="{StaticResource HelperBubbleStyle}">
+                    <Button Content="Koledar" Command="{Binding OpenCalendarCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
             </StackPanel>
             <Button Style="{StaticResource HelperCircleButtonStyle}" Command="{Binding ToggleBubblesCommand}" />

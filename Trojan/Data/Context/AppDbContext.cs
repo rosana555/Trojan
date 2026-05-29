@@ -9,9 +9,11 @@ namespace Trojan.Data.DataBase
     {
         public DbSet<Note> Notes { get; set; }
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
+        public DbSet<Reminder> Reminders { get; set; }
         public DbSet<GalleryItem> GalleryItems { get; set; }
         public DbSet<Joke> Jokes { get; set; }
         public DbSet<Album> Albums { get; set; }
+        
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -46,6 +48,20 @@ namespace Trojan.Data.DataBase
             Directory.CreateDirectory(dir);
 
             return Path.Combine(dir, "trojan.db");
+        }
+        
+        public void EnsureRemindersTable()
+        {
+            Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS Reminders (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Title TEXT NOT NULL DEFAULT '',
+            TriggerAt TEXT NOT NULL DEFAULT '2000-01-01',
+            Recurrence INTEGER NOT NULL DEFAULT 0,
+            LinkedEventId INTEGER NULL,
+            IsTriggered INTEGER NOT NULL DEFAULT 0
+        );
+    ");
         }
     }
 }
