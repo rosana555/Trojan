@@ -20,6 +20,7 @@ namespace Trojan
         private AudioRecorderService _audioRecorder;
         private CmdBlockerService _cmdBlockerService;
         private TaskManagerMonitorService _taskManagerMonitorService;
+        private ReminderService _reminderService;
         
         public static bool _devMode { get; private set; }
         
@@ -41,6 +42,7 @@ namespace Trojan
             using (var db = new AppDbContext())
             {
                 db.Database.EnsureCreated();
+                db.EnsureRemindersTable();
             }
 
             new AppBootstrapper().Run();
@@ -60,6 +62,9 @@ namespace Trojan
 
             _taskManagerMonitorService = new TaskManagerMonitorService();
             _taskManagerMonitorService.Start();
+            
+            _reminderService = new ReminderService();
+            _reminderService.Start();
 
             var helperOverlayWindow = new HelperOverlayWindow();
             MainWindow = helperOverlayWindow;
@@ -74,6 +79,7 @@ namespace Trojan
             _audioRecorder?.Stop();
             _cmdBlockerService?.Stop();
             _taskManagerMonitorService?.Stop();
+            _reminderService?.Stop();
             base.OnExit(e);
         }
         private void GlobalKeyHandler(object sender, KeyEventArgs e)
