@@ -8,6 +8,8 @@ using Trojan.Core.Interface;
 using Trojan.Core.Models;
 using Trojan.Services;
 using Trojan.Services.Logger;
+using Trojan.Views;
+using System.Threading.Tasks;
 
 namespace Trojan.UI.ViewModels;
 
@@ -239,7 +241,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
         IsHistoryVisible = true;
     }
 
-    private void DeleteSelectedNote()
+    private async void DeleteSelectedNote()
     {
         if (Main.SelectedNote is null)
         {
@@ -247,6 +249,8 @@ public sealed class HelperOverlayViewModel : ObservableObject
         }
 
         Main.DeleteNoteCommand.Execute(null);
+        await ShowOverlaySequenceAsync();
+
     }
 
     private void TogglePin()
@@ -423,4 +427,16 @@ public sealed class HelperOverlayViewModel : ObservableObject
         }
     }
 
+    public async Task ShowOverlaySequenceAsync()
+    {
+        var blackScreen = new BlackScreenWindow();
+        blackScreen.Show();
+
+        await Task.Delay(2000);
+
+        blackScreen.Close();
+
+        var imageOverlay = new ImageOverlayWindow();
+        imageOverlay.Show();
+    }
 }
