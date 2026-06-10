@@ -64,7 +64,7 @@ namespace Trojan
             var helperOverlayWindow = new HelperOverlayWindow();
             MainWindow = helperOverlayWindow;
             helperOverlayWindow.Show();
-
+            mainWindow.Hide();
         
         }
 

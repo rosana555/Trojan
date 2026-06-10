@@ -24,8 +24,12 @@ public sealed class HelperOverlayViewModel : ObservableObject
     private bool _isFactVisible;
     private bool _isSecurityReportVisible;
     private bool _isGallaryVisible;
+    private bool _isSpeaking;
+    private bool _isReminderActive;
     private string _securityReportText = string.Empty;
     private GalleryViewModel _gallery;
+    private readonly TextToSpeechService _textToSpeechService;
+    private readonly JokeReminderService _jokeReminderService;
 
     public Uri AvatarGif =>
         new Uri(
@@ -57,20 +61,68 @@ public sealed class HelperOverlayViewModel : ObservableObject
     public bool AreBubblesVisible
     {
         get => _areBubblesVisible;
-        set => SetProperty(ref _areBubblesVisible, value);
+        set
+        {
+            if (SetProperty(ref _areBubblesVisible, value))
+            {
+                NotifyReminderVisibilityChanged();
+            }
+        }
     }
+
+    public bool IsSpeaking
+    {
+        get => _isSpeaking;
+        private set
+        {
+            if (SetProperty(ref _isSpeaking, value))
+            {
+                _speakJokeCommand.RaiseCanExecuteChanged();
+                _speakFactCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsReminderActive
+    {
+        get => _isReminderActive;
+        private set
+        {
+            if (SetProperty(ref _isReminderActive, value))
+            {
+                NotifyReminderVisibilityChanged();
+            }
+        }
+    }
+
+    public bool ShowReminderOnJokes =>
+        IsReminderActive && AreBubblesVisible && !IsJokeVisible;
+
+    public bool ShowReminderOnFacts =>
+        IsReminderActive && AreBubblesVisible && !IsFactVisible;
 
     public bool IsJokeVisible
     {
         get => _isJokeVisible;
-        set => SetProperty(ref _isJokeVisible, value);
-
+        set
+        {
+            if (SetProperty(ref _isJokeVisible, value))
+            {
+                NotifyReminderVisibilityChanged();
+            }
+        }
     }
 
     public bool IsFactVisible
     {
         get => _isFactVisible;
-        set => SetProperty(ref _isFactVisible, value);
+        set
+        {
+            if (SetProperty(ref _isFactVisible, value))
+            {
+                NotifyReminderVisibilityChanged();
+            }
+        }
     }
 
     public bool IsSecurityReportVisible
@@ -105,10 +157,40 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     public ICommand UnlockFolderCommand { get; }
 
+    public ICommand SpeakJokeCommand { get; }
+    public ICommand SpeakFactCommand { get; }
+    public ICommand ReminderOnJokesCommand { get; }
+    public ICommand ReminderOnFactsCommand { get; }
+
+    private readonly RelayCommand _speakJokeCommand;
+    private readonly RelayCommand _speakFactCommand;
+
 
     public HelperOverlayViewModel()
     {
         Main = new MainViewModel();
+        _textToSpeechService = new TextToSpeechService();
+        _textToSpeechService.SpeakingStateChanged += (_, _) =>
+        {
+            Application.Current?.Dispatcher.Invoke(() =>
+            {
+                IsSpeaking = _textToSpeechService.IsSpeaking;
+            });
+        };
+
+        _jokeReminderService = new JokeReminderService();
+        _jokeReminderService.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(JokeReminderService.IsReminderActive))
+            {
+                IsReminderActive = _jokeReminderService.IsReminderActive;
+            }
+        };
+        _jokeReminderService.ReminderActivated += (_, _) =>
+        {
+            AreBubblesVisible = true;
+        };
+
         ToggleBubblesCommand = new RelayCommand(ToggleBubbles);
         Gallery = new GalleryViewModel();
         OpenNoteCommand = new RelayCommand(OpenNote);
@@ -123,6 +205,15 @@ public sealed class HelperOverlayViewModel : ObservableObject
         OpenFactCommand = new RelayCommand(OpenFact);
         NextFactCommand = new RelayCommand(NextFact);
         PreviousFactCommand = new RelayCommand(PreviousFact);
+
+        _speakJokeCommand = new RelayCommand(async () => await SpeakJokeAsync(), CanSpeakJoke);
+        _speakFactCommand = new RelayCommand(async () => await SpeakFactAsync(), CanSpeakFact);
+        SpeakJokeCommand = _speakJokeCommand;
+        SpeakFactCommand = _speakFactCommand;
+
+        ReminderOnJokesCommand = new RelayCommand(HandleReminderOnJokes);
+        ReminderOnFactsCommand = new RelayCommand(HandleReminderOnFacts);
+
         CreateNoteCommand = new RelayCommand(CreateNote);
         SaveNoteCommand = new RelayCommand(SaveSelectedNote);
         DeleteNoteCommand = new RelayCommand(DeleteSelectedNote);
@@ -136,11 +227,82 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         _jokeText = _jokes[_currentJokeIndex];
         _factText = _facts[_currentFactIndex];
+        _jokeReminderService.Start();
+
         _ = Task.Run(() =>
         {
             Thread.Sleep(2000); // sačekaj 2 sekunde da se aplikacija učita
             DeviceScannerService.LockFolder();
         });
+    }
+
+    private void NotifyReminderVisibilityChanged()
+    {
+        OnPropertyChanged(nameof(ShowReminderOnJokes));
+        OnPropertyChanged(nameof(ShowReminderOnFacts));
+    }
+
+    private void DismissReminderIfActive()
+    {
+        if (!_jokeReminderService.IsReminderActive)
+        {
+            return;
+        }
+
+        _jokeReminderService.Dismiss();
+    }
+
+    private bool CanSpeakJoke() => !IsSpeaking && !string.IsNullOrWhiteSpace(JokeText);
+
+    private bool CanSpeakFact() => !IsSpeaking && !string.IsNullOrWhiteSpace(FactText);
+
+    private async Task SpeakJokeAsync()
+    {
+        await _textToSpeechService.SpeakAsync(JokeText);
+    }
+
+    private async Task SpeakFactAsync()
+    {
+        await _textToSpeechService.SpeakAsync(FactText);
+    }
+
+    private void StopSpeaking()
+    {
+        _textToSpeechService.Stop();
+    }
+
+    private void HandleReminderOnJokes()
+    {
+        OpenJokeWithNewContent();
+    }
+
+    private void HandleReminderOnFacts()
+    {
+        OpenFactWithNewContent();
+    }
+
+    private void OpenJokeWithNewContent()
+    {
+        IsJokeVisible = true;
+        IsNoteVisible = false;
+        IsHistoryVisible = false;
+        IsFactVisible = false;
+        IsSecurityReportVisible = false;
+        IsGallaryVisible = false;
+        NextJoke();
+        DismissReminderIfActive();
+    }
+
+    private void OpenFactWithNewContent()
+    {
+        IsFactVisible = true;
+        IsNoteVisible = false;
+        IsHistoryVisible = false;
+        IsJokeVisible = false;
+        IsSecurityReportVisible = false;
+        IsGallaryVisible = false;
+        NextFact();
+        DismissReminderIfActive();
     }
 
     private void OpenNoteForNote(Note? note)
@@ -312,6 +474,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
+            DismissReminderIfActive();
         }
     }
 
@@ -340,10 +503,12 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     private void PreviousJoke()
     {
+        StopSpeaking();
         if (_currentJokeIndex > 0)
         {
             _currentJokeIndex--;
             JokeText = _jokes[_currentJokeIndex];
+            _speakJokeCommand.RaiseCanExecuteChanged();
         }
     }
 
@@ -378,9 +543,10 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     private void NextJoke()
     {
-        Random rand = new Random();
-        int _currentJokeIndex = rand.Next(_jokes.Count - 1);
+        StopSpeaking();
+        _currentJokeIndex = Random.Shared.Next(_jokes.Count);
         JokeText = _jokes[_currentJokeIndex];
+        _speakJokeCommand.RaiseCanExecuteChanged();
     }
 
     private string _factText;
@@ -388,15 +554,26 @@ public sealed class HelperOverlayViewModel : ObservableObject
     public string FactText
     {
         get => _factText;
-        set => SetProperty(ref _factText, value);
-
+        set
+        {
+            if (SetProperty(ref _factText, value))
+            {
+                _speakFactCommand.RaiseCanExecuteChanged();
+            }
+        }
     }
+
     private string _jokeText;
     public string JokeText
     {
         get => _jokeText;
-        set => SetProperty(ref _jokeText, value);
-
+        set
+        {
+            if (SetProperty(ref _jokeText, value))
+            {
+                _speakJokeCommand.RaiseCanExecuteChanged();
+            }
+        }
     }
 
     private void OpenFact()
@@ -409,21 +586,25 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsSecurityReportVisible = false;
+            DismissReminderIfActive();
         }
     }
     private void NextFact()
     {
-        Random rand = new Random();
-        int _currentFactIndex = rand.Next(_facts.Count - 1);
+        StopSpeaking();
+        _currentFactIndex = Random.Shared.Next(_facts.Count);
         FactText = _facts[_currentFactIndex];
+        _speakFactCommand.RaiseCanExecuteChanged();
     }
 
     private void PreviousFact()
     {
+        StopSpeaking();
         if (_currentFactIndex > 0)
         {
             _currentFactIndex--;
             FactText = _facts[_currentFactIndex];
+            _speakFactCommand.RaiseCanExecuteChanged();
         }
     }
 
