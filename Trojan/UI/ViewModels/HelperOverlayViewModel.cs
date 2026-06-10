@@ -300,6 +300,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsFactVisible = false;
+            IsGallaryVisible = false;
         }
     }
     private void OpenJoke()
@@ -312,6 +313,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
+            IsGallaryVisible = false;
         }
     }
 
@@ -409,6 +411,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsSecurityReportVisible = false;
+            IsGallaryVisible = false;
         }
     }
     private void NextFact()

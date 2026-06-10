@@ -138,5 +138,13 @@ namespace Trojan.UI.Views.Components
             AppLog.Info(
                 $"Kliknil na sliko: {ImagePath}, datum: {ImageDate}");
         }
+
+        public event EventHandler? DeleteRequested;
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteRequested?.Invoke(this, EventArgs.Empty);
+        }
     }
+
+
 }
