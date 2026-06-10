@@ -308,7 +308,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsFactVisible = false;
         }
     }
-    private void OpenJoke()
+    private async void OpenJoke()
     {
         IsJokeVisible = !IsJokeVisible;
 
@@ -318,6 +318,9 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
+            SetChooseAvatar();
+            await Task.Delay(10000);
+            SetAwakeAvatar();
         }
     }
 
@@ -405,7 +408,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     }
 
-    private void OpenFact()
+    private async void OpenFact()
     {
         IsFactVisible = !IsFactVisible;
 
@@ -415,6 +418,9 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsSecurityReportVisible = false;
+            SetChooseAvatar();
+            await Task.Delay(10000);
+            SetAwakeAvatar();
         }
     }
     private void NextFact()
@@ -458,6 +464,13 @@ public sealed class HelperOverlayViewModel : ObservableObject
     {
         AvatarGif = new Uri(
             "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
+            UriKind.Absolute);
+    }
+
+    public void SetChooseAvatar()
+    {
+        AvatarGif = new Uri(
+            "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_choose.gif",
             UriKind.Absolute);
     }
 }
