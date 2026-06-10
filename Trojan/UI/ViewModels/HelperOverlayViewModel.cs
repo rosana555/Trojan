@@ -27,10 +27,16 @@ public sealed class HelperOverlayViewModel : ObservableObject
     private string _securityReportText = string.Empty;
     private GalleryViewModel _gallery;
 
-    public Uri AvatarGif =>
-        new Uri(
-            "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
-            UriKind.Absolute);
+    private Uri _avatarGif =
+    new Uri(
+        "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
+        UriKind.Absolute);
+
+    public Uri AvatarGif
+    {
+        get => _avatarGif;
+        set => SetProperty(ref _avatarGif, value);
+    }
     public bool IsNoteVisible
     {
         get => _isNoteVisible;
@@ -438,5 +444,20 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         var imageOverlay = new ImageOverlayWindow();
         imageOverlay.Show();
+    }
+
+
+    public void SetSleepingAvatar()
+    {
+        AvatarGif = new Uri(
+            "pack://application:,,,/UI/Assets/SpriteSheet/sleepy_samsa.gif",
+            UriKind.Absolute);
+    }
+
+    public void SetAwakeAvatar()
+    {
+        AvatarGif = new Uri(
+            "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
+            UriKind.Absolute);
     }
 }

