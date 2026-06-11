@@ -628,7 +628,6 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsFactVisible = false;
-            IsCalendarVisible = false;
         }
 
         SecurityReportText = BuildSecurityReport();
@@ -643,8 +642,6 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
-            DismissReminderIfActive();
-            IsCalendarVisible = false;
         }
     }
 
@@ -756,8 +753,6 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsSecurityReportVisible = false;
-            DismissReminderIfActive();
-            IsCalendarVisible = false;
         }
     }
     private void NextFact()

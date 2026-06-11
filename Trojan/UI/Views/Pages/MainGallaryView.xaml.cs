@@ -184,10 +184,19 @@ namespace Trojan.UI.Views.Pages
                 GalleryTitle.Text = "Ustvarjanje kolaža";
 
                 GalleryPanel.Children.Clear();
-
                 foreach (var galleryItem in vm.GalleryItems)
                 {
-                    AddImage(galleryItem);
+                    if (galleryItem.Description == "Kolaž")
+                    {
+                        AddImage(galleryItem);
+                        continue;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(galleryItem.OriginalFilePath) &&
+                        File.Exists(galleryItem.OriginalFilePath))
+                    {
+                        AddImage(galleryItem);
+                    }
                 }
             }
         }
@@ -258,21 +267,40 @@ namespace Trojan.UI.Views.Pages
 
             foreach (var galleryItem in vm.GalleryItems)
             {
-                AddImage(galleryItem);
+                if (galleryItem.Description == "Kolaž")
+                {
+                    AddImage(galleryItem);
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(galleryItem.OriginalFilePath) &&
+                    File.Exists(galleryItem.OriginalFilePath))
+                {
+                    AddImage(galleryItem);
+                }
             }
         }
 
         private void AddAlbum(Album album)
         {
+            string thumbnailPath = PlaceholderAlbumImage;
+
+            var thumbnail = album.Thumbnail
+                ?? album.Contents.FirstOrDefault();
+
+            if (thumbnail != null &&
+                !string.IsNullOrWhiteSpace(thumbnail.OriginalFilePath) &&
+                File.Exists(thumbnail.OriginalFilePath))
+            {
+                thumbnailPath = ResolveImagePath(thumbnail.FilePath);
+            }
+
             var albumItem = new AlbumItem
             {
                 Width = 220,
                 Height = 260,
                 AlbumTitle = album.Title,
-                AlbumImage = ResolveImagePath(
-                    album.Thumbnail?.FilePath
-                    ?? album.Contents.FirstOrDefault()?.FilePath
-                    ?? PlaceholderAlbumImage),
+                AlbumImage = thumbnailPath,
                 ImageCount = album.Contents.Count,
                 Tag = album,
                 Margin = new Thickness(10)
@@ -312,7 +340,53 @@ namespace Trojan.UI.Views.Pages
 
             foreach (var galleryItem in selectedAlbum.Contents)
             {
-                AddImage(galleryItem);
+                if (galleryItem.Description == "Kolaž")
+                {
+                    AddImage(galleryItem);
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(galleryItem.OriginalFilePath) &&
+                    File.Exists(galleryItem.OriginalFilePath))
+                {
+                    AddImage(galleryItem);
+                }
+            }
+        }
+        private void ImageItem_DeleteRequested(object? sender, EventArgs e)
+        {
+            if (DataContext is not GalleryViewModel vm)
+                return;
+
+            if (vm.SelectedAlbum == null)
+                return;
+
+            if (sender is not GalleryImageItem imageItem ||
+                imageItem.Tag is not GalleryItem galleryItem)
+                return;
+
+            var result = MessageBox.Show(
+                "Odstranim sliko iz albuma?",
+                "Potrditev",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+            MessageBox.Show(
+    $"Brisem sliko {galleryItem.Id} iz albuma {vm.SelectedAlbum.Id}");
+
+            DataBaseUtil.RemoveImageFromAlbum(
+                vm.SelectedAlbum.Id,
+                galleryItem.Id);
+
+
+            vm.ReloadData(selectedAlbumId: vm.SelectedAlbum.Id);
+
+
+            if (vm.SelectedAlbum != null)
+            {
+                OpenAlbum(vm.SelectedAlbum);
             }
         }
 
@@ -331,17 +405,32 @@ namespace Trojan.UI.Views.Pages
             imageItem.MouseLeftButtonDown +=
                 ImageItem_MouseLeftButtonDown;
 
+            imageItem.DeleteRequested += ImageItem_DeleteRequested;
+
             GalleryPanel.Children.Add(imageItem);
         }
 
-        private void ImageItem_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void ImageItem_MouseLeftButtonDown(
+            object sender,
+            System.Windows.Input.MouseButtonEventArgs e)
         {
             if (DataContext is not GalleryViewModel vm)
                 return;
-            
-            if (!vm.IsCreatingAlbum &&
-                !vm.IsCreatingCollage)
+
+            // Navaden ogled slike
+            if (!vm.IsCreatingAlbum && !vm.IsCreatingCollage)
+            {
+                if (sender is GalleryImageItem imageItem &&
+                    imageItem.Tag is GalleryItem galleryItem)
+                {
+                    var viewer =
+                        new ImageViewerWindow(galleryItem.FilePath);
+
+                    viewer.ShowDialog();
+                }
+
                 return;
+            }
 
             if (sender is not GalleryImageItem clickedImage)
                 return;
@@ -349,7 +438,6 @@ namespace Trojan.UI.Views.Pages
             // THUMBNAIL SELECTION MODE
             if (_isSelectingThumbnail)
             {
-                // remove old thumbnail
                 if (_thumbnailImage != null)
                 {
                     _thumbnailImage.IsThumbnail = false;
@@ -365,7 +453,6 @@ namespace Trojan.UI.Views.Pages
                 return;
             }
 
-            // thumbnail click = remove thumbnail
             if (clickedImage.IsThumbnail)
             {
                 clickedImage.IsThumbnail = false;
@@ -378,9 +465,7 @@ namespace Trojan.UI.Views.Pages
                 return;
             }
 
-            // NORMAL TOGGLE
-            clickedImage.IsSelected =
-                !clickedImage.IsSelected;
+            clickedImage.IsSelected = !clickedImage.IsSelected;
         }
         private void SelectThumbnailButton_Click(object sender, RoutedEventArgs e)
         {

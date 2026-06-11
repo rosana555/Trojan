@@ -214,11 +214,50 @@ namespace Trojan.UI.ViewModels
             if (!File.Exists(PendingImagePath))
                 return false;
 
+            // Velikost datoteke
+            var fileInfo = new FileInfo(PendingImagePath);
+
+            const long maxSizeBytes = 10 * 1024 * 1024; // 10 MB
+
+            if (fileInfo.Length > maxSizeBytes)
+            {
+                System.Windows.MessageBox.Show(
+                    "Slika je prevelika. Dovoljena velikost je 10 MB.");
+
+                return false;
+            }
+
+
+            //Preveri da je datoteka res slika
+            //in da ni previsoke resolucije
+            try
+            {
+                using var image =
+                    System.Drawing.Image.FromFile(PendingImagePath);
+
+                if (image.Width > 4000 ||
+                    image.Height > 4000)
+                {
+                    System.Windows.MessageBox.Show(
+                        "Slika ima previsoko resolucijo. Največ 4000x4000.");
+
+                    return false;
+                }
+            }
+            catch
+            {
+                System.Windows.MessageBox.Show(
+                    "Izbrana datoteka ni veljavna slika.");
+
+                return false;
+            }
+
             var importedPath = ImportImageFile(PendingImagePath);
 
             var galleryItem = new GalleryItem
             {
                 FilePath = importedPath,
+                OriginalFilePath = PendingImagePath,
                 Description = PendingImageDescription.Trim(),
                 AddedAt = DateTime.UtcNow
             };
@@ -234,6 +273,7 @@ namespace Trojan.UI.ViewModels
                 selectedGalleryItemId: galleryItem.Id);
 
             ResetPendingImage();
+
             IsAddingImage = false;
             IsInsideAlbum = true;
 

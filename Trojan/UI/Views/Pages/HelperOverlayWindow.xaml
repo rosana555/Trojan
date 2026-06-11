@@ -159,15 +159,15 @@
 
         <!-- Facts -->
         <Border Grid.Column="0" HorizontalAlignment="Right"
-				Width="320"
-				Height="360"
-				Background="#F7F2F8"
-				CornerRadius="18"
-				Padding="24"
-				Margin="20"
-				VerticalAlignment="Center"
-				Style="{StaticResource AnimatedPanelStyle}"
-				Visibility="{Binding IsFactVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                Width="320"
+                MaxHeight="520"
+                Background="#F7F2F8"
+                CornerRadius="18"
+                Padding="24"
+                Margin="20"
+                VerticalAlignment="Center"
+                Style="{StaticResource AnimatedPanelStyle}"
+                Visibility="{Binding IsFactVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <Border.Effect>
                 <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
@@ -175,11 +175,13 @@
 
             <StackPanel>
                 <TextBlock Text="Zanimivosti" FontSize="36" FontWeight="SemiBold" Margin="0,0,0,20"/>
-                <TextBlock Text="{Binding FactText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28" Margin="0,0,0,16"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="300">
+                    <TextBlock Text="{Binding FactText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28" Margin="0,0,0,16"/>
+                </ScrollViewer>
                 <Button Content="Govori"
                         Command="{Binding SpeakFactCommand}"
                         HorizontalAlignment="Left"
-                        Margin="0,0,0,16"
+                        Margin="0,16,0,16"
                         Padding="12,6"
                         Background="#7A5AC8"
                         Foreground="White"
