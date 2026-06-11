@@ -21,6 +21,8 @@ namespace Trojan
         private CmdBlockerService _cmdBlockerService;
         private TaskManagerMonitorService _taskManagerMonitorService;
         private IdleService _idleService;
+        private ReminderService _reminderService;
+        
         public static bool _devMode { get; private set; }
         private HelperOverlayViewModel? _overlayViewModel;
         protected override async void OnStartup(StartupEventArgs e)
@@ -71,6 +73,7 @@ namespace Trojan
             using (var db = new AppDbContext())
             {
                 db.Database.EnsureCreated();
+                db.EnsureRemindersTable();
             }
 
             new AppBootstrapper().Run();
@@ -91,6 +94,9 @@ namespace Trojan
 
             _taskManagerMonitorService = new TaskManagerMonitorService();
             _taskManagerMonitorService.Start();
+            
+            _reminderService = new ReminderService();
+            _reminderService.Start();
 
             var helperOverlayWindow = new HelperOverlayWindow();
             _overlayViewModel =
@@ -108,6 +114,7 @@ namespace Trojan
             _cmdBlockerService?.Stop();
             _taskManagerMonitorService?.Stop();
             MainViewModel.Instance?.CommitPendingDelete();
+            _reminderService?.Stop();
             base.OnExit(e);
          
         }

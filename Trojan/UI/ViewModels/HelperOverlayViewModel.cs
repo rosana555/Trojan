@@ -31,6 +31,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
     private GalleryViewModel _gallery;
     private readonly TextToSpeechService _textToSpeechService;
     private readonly JokeReminderService _jokeReminderService;
+    private CalendarViewModel _calendar;
 
     public ICommand UndoDeleteCommand { get; }
     private Uri _avatarGif =
@@ -144,6 +145,16 @@ public sealed class HelperOverlayViewModel : ObservableObject
         get => _securityReportText;
         set => SetProperty(ref _securityReportText, value);
     }
+    
+    private bool _isCalendarVisible = false;
+    public bool IsCalendarVisible
+    {
+        get => _isCalendarVisible;
+        set { _isCalendarVisible = value; OnPropertyChanged(); }
+    }
+
+    public ICommand OpenCalendarCommand { get; }
+    
     public ICommand ToggleBubblesCommand { get; }
     public ICommand OpenNoteCommand { get; }
     public ICommand OpenGallaryCommand { get; }
@@ -205,6 +216,8 @@ public sealed class HelperOverlayViewModel : ObservableObject
         OpenGallaryCommand = new RelayCommand(OpenGallary);
         OpenNoteForNoteCommand = new RelayCommand<Note>(OpenNoteForNote);
         OpenHistoryCommand = new RelayCommand(OpenHistory);
+        Calendar = new CalendarViewModel();
+        OpenCalendarCommand = new RelayCommand(OpenCalendar);
 
         OpenJokeCommand = new RelayCommand(OpenJoke);
         NextJokeCommand = new RelayCommand(NextJoke);
@@ -331,6 +344,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsFactVisible = false;
             IsSecurityReportVisible = false;
             IsGallaryVisible = false;
+            IsCalendarVisible = false;
         }
     }
 
@@ -346,6 +360,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsFactVisible = false;
             IsSecurityReportVisible = false;
             IsGallaryVisible = false;
+            IsCalendarVisible = false;
         }
     }
 
@@ -360,6 +375,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsFactVisible = false;
             IsSecurityReportVisible = false;
             IsGallaryVisible = false;
+            IsCalendarVisible = false;
         }
     }
 
@@ -374,7 +390,25 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
+            IsCalendarVisible = false;
             IsNoteVisible = false;
+        }
+    }
+    
+    private void OpenCalendar()
+    {
+        Console.WriteLine($"OpenCalendar called! Current IsCalendarVisible: {IsCalendarVisible}");
+        IsCalendarVisible = !IsCalendarVisible;
+        Console.WriteLine($"After toggle IsCAlendarVisible: {IsCalendarVisible}");
+        
+        if (IsCalendarVisible)
+        {
+            IsJokeVisible = false;
+            IsHistoryVisible = false;
+            IsFactVisible = false;
+            IsSecurityReportVisible = false;
+            IsNoteVisible = false;
+            IsGallaryVisible = false;
         }
     }
 
@@ -389,6 +423,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsFactVisible = false;
             IsSecurityReportVisible = false;
             IsGallaryVisible = false;
+            IsCalendarVisible = false;
         }
     }
 
@@ -593,6 +628,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsFactVisible = false;
+            IsCalendarVisible = false;
         }
 
         SecurityReportText = BuildSecurityReport();
@@ -608,6 +644,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsFactVisible = false;
             IsSecurityReportVisible = false;
             DismissReminderIfActive();
+            IsCalendarVisible = false;
         }
     }
 
@@ -720,6 +757,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsJokeVisible = false;
             IsSecurityReportVisible = false;
             DismissReminderIfActive();
+            IsCalendarVisible = false;
         }
     }
     private void NextFact()
@@ -740,6 +778,14 @@ public sealed class HelperOverlayViewModel : ObservableObject
             _speakFactCommand.RaiseCanExecuteChanged();
         }
     }
+    
+    public CalendarViewModel Calendar
+    {
+        get => _calendar;
+        set => SetProperty(ref _calendar, value);
+    }
+    
+    
 
     public async Task ShowOverlaySequenceAsync()
     {
