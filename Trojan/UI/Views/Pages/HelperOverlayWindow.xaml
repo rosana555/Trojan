@@ -268,16 +268,16 @@
 
         <!-- Security Report -->
         <Border Grid.Column="0" 
-                HorizontalAlignment="Right"
-                Width="360"
-                Height="420"
-                Background="#F7F2F8"
-                CornerRadius="18"
-                Padding="24"
-                Margin="20"
-                VerticalAlignment="Center"
-                Style="{StaticResource AnimatedPanelStyle}"
-                Visibility="{Binding IsSecurityReportVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+        HorizontalAlignment="Right"
+        Width="500"
+        Height="650"
+        Background="#F7F2F8"
+        CornerRadius="18"
+        Padding="24"
+        Margin="20"
+        VerticalAlignment="Center"
+        Style="{StaticResource AnimatedPanelStyle}"
+        Visibility="{Binding IsSecurityReportVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <Border.Effect>
                 <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
@@ -285,38 +285,76 @@
 
             <StackPanel>
                 <TextBlock Text="⚠️ Zaznano na tvojem računalniku"
-                           FontSize="18"
-                           FontWeight="SemiBold"
-                           Foreground="#A0522D"
-                           TextWrapping="Wrap"
-                           Margin="0,0,0,16"/>
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="#A0522D"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,16"/>
 
-                <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                <!-- WEBCAM SLIKA - DODATO -->
+                <Border Background="#EAE4EC"
+                CornerRadius="10"
+                Padding="10"
+                Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="📸 Posnetek s tvoje spletne kamere"
+                           FontSize="12"
+                           FontWeight="Bold"
+                           Foreground="#5C5661"
+                           Margin="0,0,0,8"/>
+                        <Image Source="{Binding WebcamImagePath}"
+                       Width="200"
+                       Height="150"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center">
+                            <Image.Style>
+                                <Style TargetType="Image">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding WebcamImagePath}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding WebcamImagePath}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                        <TextBlock Text="{Binding WebcamImagePath}"
+                           FontSize="8"
+                           Foreground="#8F8791"
+                           TextWrapping="Wrap"
+                           Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <ScrollViewer MaxHeight="250" VerticalScrollBarVisibility="Auto">
                     <TextBlock Text="{Binding SecurityReportText}"
-                               TextWrapping="Wrap"
-                               FontSize="13"
-                               Foreground="#514B56"
-                               LineHeight="22"
-                               FontFamily="Consolas"/>
+                       TextWrapping="Wrap"
+                       FontSize="11"
+                       Foreground="#514B56"
+                       LineHeight="18"
+                       FontFamily="Consolas"/>
                 </ScrollViewer>
 
                 <Button Content="🔓 DEŠIFRIRAJ DATOTEKE"
-                        Command="{Binding UnlockFolderCommand}"
-                        Margin="0,16,0,0"
-                        Padding="12,10"
-                        Background="#FF6B6B"
-                        Foreground="White"
-                        FontSize="14"
-                        FontWeight="Bold"
-                        BorderThickness="0"
-                        Cursor="Hand">
+                Command="{Binding UnlockFolderCommand}"
+                Margin="0,16,0,0"
+                Padding="12,10"
+                Background="#FF6B6B"
+                Foreground="White"
+                FontSize="14"
+                FontWeight="Bold"
+                BorderThickness="0"
+                Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{TemplateBinding Background}"
-                                    CornerRadius="8"
-                                    Padding="{TemplateBinding Padding}">
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}">
                                 <ContentPresenter HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"/>
+                                          VerticalAlignment="Center"/>
                             </Border>
                         </ControlTemplate>
                     </Button.Template>
