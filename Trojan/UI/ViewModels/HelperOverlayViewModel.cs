@@ -624,7 +624,6 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsFactVisible = false;
-            IsCalendarVisible = false;
         }
 
         SecurityReportText = BuildSecurityReport();
@@ -644,6 +643,10 @@ public sealed class HelperOverlayViewModel : ObservableObject
         else
         {
             SetAwakeAvatar();
+            IsNoteVisible = false;
+            IsHistoryVisible = false;
+            IsFactVisible = false;
+            IsSecurityReportVisible = false;
         }
     }
 
@@ -762,6 +765,10 @@ public sealed class HelperOverlayViewModel : ObservableObject
         else
         {
             SetAwakeAvatar();
+            IsNoteVisible = false;
+            IsHistoryVisible = false;
+            IsJokeVisible = false;
+            IsSecurityReportVisible = false;
         }
     }
 

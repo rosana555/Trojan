@@ -43,6 +43,8 @@ namespace Trojan.Core.Models
             set => SetProperty(ref _albums, value);
         }
 
+        public string OriginalFilePath { get; set; } = string.Empty;
+
         public GalleryItem()
         {
             _albums = new ObservableCollection<Album>();
