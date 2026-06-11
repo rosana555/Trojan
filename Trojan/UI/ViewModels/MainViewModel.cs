@@ -2,20 +2,23 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Threading;
 using Trojan.Core.Base;
 using Trojan.Core.Commands;
 using Trojan.Core.Models;
 using Trojan.Data.DataBase;
+using Trojan.Services.Logger;
 
 namespace Trojan.UI.ViewModels
 {
     public sealed class MainViewModel : ObservableObject
     {
         private readonly DispatcherTimer _autosaveTimer;
-
+        public static MainViewModel? Instance { get; private set; }
         private bool _hasPendingChanges;
-
+        private Note? _lastDeletedNote;
+        public bool CanUndoDelete => _lastDeletedNote is not null;
         private Note? _pendingNote;
 
         // =========================
@@ -133,6 +136,11 @@ namespace Trojan.UI.ViewModels
         public RelayCommand TogglePinCommand =>
             _togglePinCommand;
 
+        private readonly RelayCommand _undoDeleteCommand;
+
+        public RelayCommand UndoDeleteCommand =>
+            _undoDeleteCommand;
+
         private readonly RelayCommand<Note> _togglePinForNoteCommand;
 
         public RelayCommand<Note> TogglePinForNoteCommand =>
@@ -144,6 +152,8 @@ namespace Trojan.UI.ViewModels
 
         public MainViewModel()
         {
+            Instance = this;
+
             Gallery = new GalleryViewModel();
 
             _autosaveTimer = new DispatcherTimer
@@ -170,6 +180,10 @@ namespace Trojan.UI.ViewModels
                 new RelayCommand(
                     ToggleSelectedNotePin,
                     () => SelectedNote is not null);
+            _undoDeleteCommand =
+                new RelayCommand(
+                    UndoDelete,
+                    () => _lastDeletedNote is not null);
 
             _togglePinForNoteCommand =
                 new RelayCommand<Note>(TogglePinForNote);
@@ -183,17 +197,27 @@ namespace Trojan.UI.ViewModels
 
         private void LoadData()
         {
-            Notes = new ObservableCollection<Note>(
-                DataBaseUtil.GetNotes());
+            try
+            {
+                Notes = new ObservableCollection<Note>(
+                    DataBaseUtil.GetNotes());
 
-            Jokes = new ObservableCollection<Joke>(
-                DataBaseUtil.GetJokes());
+                Jokes = new ObservableCollection<Joke>(
+                    DataBaseUtil.GetJokes());
 
-            CalendarEvents =
-                new ObservableCollection<CalendarEvent>(
-                    DataBaseUtil.GetCalendarEvents());
+                CalendarEvents =
+                    new ObservableCollection<CalendarEvent>(
+                        DataBaseUtil.GetCalendarEvents());
 
-            SelectedNote = Notes.FirstOrDefault();
+                SelectedNote = Notes.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+
+                Notes = new ObservableCollection<Note>();
+                Jokes = new ObservableCollection<Joke>();
+                CalendarEvents = new ObservableCollection<CalendarEvent>();
+            }
         }
 
         // =========================
@@ -264,18 +288,35 @@ namespace Trojan.UI.ViewModels
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(SelectedNote.Title))
+            {
+                MessageBox.Show(
+                    "Naslov beležke ne sme biti prazen.",
+                    "Napaka",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
             SaveNoteInternal(SelectedNote);
-
-            _saveNoteCommand.RaiseCanExecuteChanged();
-
-            _deleteNoteCommand.RaiseCanExecuteChanged();
-
-            _togglePinCommand.RaiseCanExecuteChanged();
         }
 
         private void SaveNoteInternal(Note note)
         {
-            DataBaseUtil.SaveNote(note);
+            try
+            {
+                DataBaseUtil.SaveNote(note);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Napaka pri shranjevanju beležke.",
+                    "Napaka",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+            }
 
             _hasPendingChanges = false;
 
@@ -283,7 +324,6 @@ namespace Trojan.UI.ViewModels
 
             SortNotes();
         }
-
         private void DeleteSelectedNote()
         {
             if (SelectedNote is null)
@@ -291,15 +331,46 @@ namespace Trojan.UI.ViewModels
                 return;
             }
 
-            var deletedId = SelectedNote.Id;
-
-            DataBaseUtil.DeleteNote(deletedId);
+            _lastDeletedNote = SelectedNote;
 
             Notes.Remove(SelectedNote);
 
             SelectedNote = Notes.FirstOrDefault();
-        }
 
+            _undoDeleteCommand.RaiseCanExecuteChanged();
+
+            OnPropertyChanged(nameof(CanUndoDelete));
+        }
+        public void CommitPendingDelete()
+        {
+            if (_lastDeletedNote is null)
+            {
+                return;
+            }
+
+            DataBaseUtil.DeleteNote(_lastDeletedNote.Id);
+
+            _lastDeletedNote = null;
+        }
+        private void UndoDelete()
+        {
+            if (_lastDeletedNote is null)
+            {
+                return;
+            }
+
+            Notes.Insert(0, _lastDeletedNote);
+
+            SelectedNote = _lastDeletedNote;
+
+            _lastDeletedNote = null;
+
+            SortNotes();
+
+            _undoDeleteCommand.RaiseCanExecuteChanged();
+
+            OnPropertyChanged(nameof(CanUndoDelete));
+        }
         private void ToggleSelectedNotePin()
         {
             if (SelectedNote is null)
@@ -324,7 +395,19 @@ namespace Trojan.UI.ViewModels
 
             note.IsPinned = !note.IsPinned;
 
-            DataBaseUtil.SaveNote(note);
+            try
+            {
+                DataBaseUtil.SaveNote(note);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Napaka pri shranjevanju beležke.",
+                    "Napaka",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+            }
 
             SortNotes();
         }

@@ -8,7 +8,6 @@ using Trojan.UI.ViewModels;
 using Trojan.UI.Views.Pages;
 // using Trojan.DataBase;
 using Trojan.Views;
-
 namespace Trojan
 {
     /// <summary>
@@ -108,7 +107,9 @@ namespace Trojan
             _audioRecorder?.Stop();
             _cmdBlockerService?.Stop();
             _taskManagerMonitorService?.Stop();
+            MainViewModel.Instance?.CommitPendingDelete();
             base.OnExit(e);
+         
         }
 
         private void GlobalMouseDownHandler(object sender, MouseButtonEventArgs e)
