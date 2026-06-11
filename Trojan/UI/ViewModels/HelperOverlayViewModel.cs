@@ -146,7 +146,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
         set => SetProperty(ref _securityReportText, value);
     }
     
-    private bool _isCalendarVisible;
+    private bool _isCalendarVisible = false;
     public bool IsCalendarVisible
     {
         get => _isCalendarVisible;

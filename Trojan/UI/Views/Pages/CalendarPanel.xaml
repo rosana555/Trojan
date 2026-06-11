@@ -3,11 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:Trojan.UI.Converters"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="520">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:RecurrenceConverter x:Key="RecurrenceConverter"/>
     </UserControl.Resources>
 
     <Grid>
@@ -32,6 +34,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
@@ -345,6 +348,221 @@
                                 Command="{Binding OpenReminderCommand}"/>
                     </Border>
                 </Grid>
+                
+                <!-- SECOND ROW: Overview buttons -->
+                <Grid Grid.Row="4" Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" CornerRadius="14" Background="#C8B8D8" Margin="0,0,6,0">
+                        <Button Content="Pregled opomnikov" Height="44" FontSize="14" FontWeight="SemiBold"
+                                Background="Transparent" Foreground="#4A4150" BorderThickness="0"
+                                Command="{Binding OpenRemindersOverlayCommand}"/>
+                    </Border>
+                    <Border Grid.Column="1" CornerRadius="14" Background="#C8B8D8" Margin="6,0,0,0">
+                        <Button Content="Pregled dogodkov" Height="44" FontSize="14" FontWeight="SemiBold"
+                                Background="Transparent" Foreground="#4A4150" BorderThickness="0"
+                                Command="{Binding OpenEventsOverlayCommand}"/>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+        
+        <!-- EVENTS OVERLAY -->
+<Border Width="500" Height="580"
+        Background="#F7F2F8"
+        CornerRadius="18"
+        Padding="24"
+        Margin="20"
+        VerticalAlignment="Center"
+        Visibility="{Binding IsEventsOverlayVisible, Converter={StaticResource BoolToVis}}">
+
+    <Border.Effect>
+        <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
+    </Border.Effect>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Vsi dogodki" FontSize="20" FontWeight="SemiBold"
+                       Foreground="#2D2D2D" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="✕" Width="34" Height="34" Background="#E8DDE8"
+                    BorderThickness="0" FontSize="16" FontWeight="Bold"
+                    Foreground="#4A4150" Cursor="Hand" Command="{Binding CloseEventsOverlayCommand}"/>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding AllEvents}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border CornerRadius="12" Margin="0,0,0,8" Padding="14,12" Background="White">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="6"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Border Grid.RowSpan="3" Grid.Column="0" Width="4" CornerRadius="2"
+                                        Background="{Binding ColorHex}"/>
+
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Title}"
+                                           FontSize="15" FontWeight="SemiBold" Foreground="#2D2D2D"
+                                           TextWrapping="Wrap" Margin="10,0,10,5"/>
+
+                                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="10,0,10,5">
+                                    <TextBlock Text="{Binding StartDateTime, StringFormat={}{0:dddd, dd. MMMM yyyy \ob HH:mm}}"
+                                               FontSize="12" Foreground="#5C5661"/>
+                                    <TextBlock Text=" - " FontSize="12" Foreground="#5C5661"/>
+                                    <TextBlock Text="{Binding EndDateTime, StringFormat={}{0:HH:mm}}"
+                                               FontSize="12" Foreground="#5C5661"/>
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Location}"
+                                           FontSize="11" Foreground="#8F8791" Margin="10,0,10,5"
+                                           Visibility="{Binding Location, Converter={StaticResource BoolToVis}}"/>
+
+                                <Button Grid.Row="0" Grid.Column="2" Content="Uredi" Padding="10,4" Margin="5,0,5,0"
+                                        Background="Transparent" BorderThickness="0" FontSize="12"
+                                        FontWeight="SemiBold" Foreground="#7A5AC8" Cursor="Hand"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding DataContext.EditEventFromListCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
+                                <Button Grid.Row="0" Grid.Column="3" Content="Zbriši" Padding="10,4"
+                                        Background="Transparent" BorderThickness="0" FontSize="12"
+                                        FontWeight="SemiBold" Foreground="#CC4444" Cursor="Hand"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding DataContext.DeleteEventFromListCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Border Grid.Row="2" CornerRadius="14" Background="#DCCFEB" Margin="0,12,0,0">
+            <Button Content="Dodaj nov dogodek" Height="52" FontSize="16" FontWeight="SemiBold"
+                    Background="Transparent" Foreground="#4A4150" BorderThickness="0"
+                    Command="{Binding OpenAddEventCommand}"/>
+        </Border>
+    </Grid>
+</Border>
+        
+                <!-- OVERLAY ZA PREGLED OPOMNIKOV (prekrije koledar) -->
+        <Border Width="500" Height="580"
+                Background="#F7F2F8"
+                CornerRadius="18"
+                Padding="24"
+                Margin="20"
+                VerticalAlignment="Center"
+                Visibility="{Binding IsRemindersOverlayVisible, Converter={StaticResource BoolToVis}}">
+
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Vsi opomniki" FontSize="20" FontWeight="SemiBold"
+                               Foreground="#2D2D2D" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Content="✕" Width="34" Height="34" Background="#E8DDE8"
+                            BorderThickness="0" FontSize="16" FontWeight="Bold"
+                            Foreground="#4A4150" Cursor="Hand" Command="{Binding CloseRemindersOverlayCommand}"/>
+                </Grid>
+
+                <!-- Seznam opomnikov -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding AllReminders}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="12" Margin="0,0,0,8" Padding="14,12" Background="White">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}"
+                                                   FontSize="15" FontWeight="SemiBold" Foreground="#2D2D2D"
+                                                   TextWrapping="Wrap" Margin="0,0,10,5"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Text="{Binding TriggerAt, StringFormat={}{0:dddd, dd. MMMM yyyy \ob HH:mm}}"
+                                                   FontSize="12" Foreground="#5C5661" Margin="0,0,10,5"/>
+                                        <Border Grid.Row="2" Grid.Column="0" CornerRadius="8" Background="#EAE4EC"
+                                                Padding="8,3" HorizontalAlignment="Left">
+                                            <TextBlock FontSize="11" Foreground="#4A4150"
+                                                       Text="{Binding Recurrence, Converter={StaticResource RecurrenceConverter}}"/>
+                                        </Border>
+
+                                        <Button Grid.Row="0" Grid.Column="1" Content="Uredi" Padding="10,4" Margin="5,0,5,0"
+                                                Background="Transparent" BorderThickness="0" FontSize="12"
+                                                FontWeight="SemiBold" Foreground="#7A5AC8" Cursor="Hand"
+                                                VerticalAlignment="Center"
+                                                Command="{Binding DataContext.EditReminderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                        <Button Grid.Row="0" Grid.Column="2" Content="Zbriši" Padding="10,4"
+                                                Background="Transparent" BorderThickness="0" FontSize="12"
+                                                FontWeight="SemiBold" Foreground="#CC4444" Cursor="Hand"
+                                                VerticalAlignment="Center"
+                                                Command="{Binding DataContext.DeleteReminderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Dodaj nov opomnik -->
+                <Border Grid.Row="2" CornerRadius="14" Background="#DCCFEB" Margin="0,12,0,0">
+                    <Button Content="Dodaj nov opomnik" Height="52" FontSize="16" FontWeight="SemiBold"
+                            Background="Transparent" Foreground="#4A4150" BorderThickness="0"
+                            Command="{Binding OpenReminderCommand}"/>
+                </Border>
             </Grid>
         </Border>
 

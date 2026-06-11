@@ -25,7 +25,7 @@ namespace Trojan.Services
 
         private void CheckReminders(object sender, EventArgs e)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
 
             using var db = new AppDbContext();
             var due = db.Reminders

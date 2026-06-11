@@ -57,6 +57,7 @@ namespace Trojan.UI.ViewModels
         // - Collections
         public ObservableCollection<CalendarDayCell> MonthCells { get; } = new();
         public ObservableCollection<CalendarEvent> DayEvents { get; } = new();
+        public ObservableCollection<Reminder> AllReminders { get; } = new();
 
         // - Event form
         private CalendarEvent _editingEvent = new();
@@ -95,6 +96,18 @@ namespace Trojan.UI.ViewModels
             set => SetProperty(ref _isReminderFormOpen, value);
         }
 
+        // - Reminders overlay (pregled)
+        private bool _isRemindersOverlayVisible = false;
+        public bool IsRemindersOverlayVisible
+        {
+            get => _isRemindersOverlayVisible;
+            set
+            {
+                SetProperty(ref _isRemindersOverlayVisible, value);
+                if (value) LoadAllReminders();
+            }
+        }
+
         // - Commands
         public ICommand PrevMonthCommand { get; }
         public ICommand NextMonthCommand { get; }
@@ -110,37 +123,45 @@ namespace Trojan.UI.ViewModels
         public ICommand PrevDayCommand { get; }
         public ICommand NextDayCommand { get; }
 
+        // - Reminders overlay commands
+        public ICommand OpenRemindersOverlayCommand { get; }
+        public ICommand CloseRemindersOverlayCommand { get; }
+        public ICommand EditReminderCommand { get; }
+        public ICommand DeleteReminderCommand { get; }
+
         public CalendarViewModel()
         {
-            PrevMonthCommand    = new RelayCommand(() =>
+            PrevMonthCommand = new RelayCommand(() =>
             {
                 CurrentMonth = CurrentMonth.AddMonths(-1);
-                if (!IsMonthView)
-                    SelectedDay = CurrentMonth;
+                if (!IsMonthView) SelectedDay = CurrentMonth;
             });
-            NextMonthCommand    = new RelayCommand(() =>
+            NextMonthCommand = new RelayCommand(() =>
             {
                 CurrentMonth = CurrentMonth.AddMonths(1);
-                if (!IsMonthView)
-                    SelectedDay = CurrentMonth;
+                if (!IsMonthView) SelectedDay = CurrentMonth;
             });
-            SwitchViewCommand   = new RelayCommand(() => IsMonthView = !IsMonthView);
+            SwitchViewCommand = new RelayCommand(() => IsMonthView = !IsMonthView);
             OpenAddEventCommand = new RelayCommand(OpenNewEventForm);
-            SaveEventCommand    = new RelayCommand(SaveEvent);
-            DeleteEventCommand  = new RelayCommand<CalendarEvent>(DeleteEvent);
-            EditEventCommand    = new RelayCommand<CalendarEvent>(OpenEditForm);
-            CloseFormCommand    = new RelayCommand(() =>
+            SaveEventCommand = new RelayCommand(SaveEvent);
+            DeleteEventCommand = new RelayCommand<CalendarEvent?>(DeleteEvent);
+            EditEventCommand = new RelayCommand<CalendarEvent?>(OpenEditForm);
+            OpenEventsOverlayCommand = new RelayCommand(() => IsEventsOverlayVisible = true);
+            CloseEventsOverlayCommand = new RelayCommand(() => IsEventsOverlayVisible = false);
+            EditEventFromListCommand = new RelayCommand<CalendarEvent?>(OpenEditEventFromList);
+            DeleteEventFromListCommand = new RelayCommand<CalendarEvent?>(DeleteEventFromList);
+            CloseFormCommand = new RelayCommand(() =>
             {
                 IsFormOpen = false;
                 IsReminderFormOpen = false;
             });
             OpenReminderCommand = new RelayCommand(() =>
             {
-                EditingReminder = new Reminder { TriggerAt = DateTime.Now.AddHours(1) };
+                EditingReminder = new Reminder { TriggerAt = DateTime.Now.AddHours(1), Recurrence = RecurrenceType.None };
                 IsReminderFormOpen = true;
             });
             SaveReminderCommand = new RelayCommand(SaveReminder);
-            SelectDayCommand    = new RelayCommand<DateTime>(day =>
+            SelectDayCommand = new RelayCommand<DateTime>(day =>
             {
                 SelectedDay = day;
                 IsMonthView = false;
@@ -156,23 +177,26 @@ namespace Trojan.UI.ViewModels
                 SyncMonthToDay();
             });
 
+            // Overlay commands
+            OpenRemindersOverlayCommand = new RelayCommand(() => IsRemindersOverlayVisible = true);
+            CloseRemindersOverlayCommand = new RelayCommand(() => IsRemindersOverlayVisible = false);
+            EditReminderCommand = new RelayCommand<Reminder?>(OpenEditReminderForm);
+            DeleteReminderCommand = new RelayCommand<Reminder?>(DeleteReminder);
+
             BuildMonthGrid();
         }
 
         private void BuildMonthGrid()
         {
             MonthCells.Clear();
-
             int startDow = ((int)CurrentMonth.DayOfWeek + 6) % 7;
             for (int i = 0; i < startDow; i++)
                 MonthCells.Add(new CalendarDayCell { IsEmpty = true });
 
             int daysInMonth = DateTime.DaysInMonth(CurrentMonth.Year, CurrentMonth.Month);
-
             using var db = new AppDbContext();
             var events = db.CalendarEvents
-                .Where(e => e.StartDateTime.Year  == CurrentMonth.Year &&
-                            e.StartDateTime.Month == CurrentMonth.Month)
+                .Where(e => e.StartDateTime.Year == CurrentMonth.Year && e.StartDateTime.Month == CurrentMonth.Month)
                 .ToList();
 
             for (int d = 1; d <= daysInMonth; d++)
@@ -180,10 +204,9 @@ namespace Trojan.UI.ViewModels
                 var date = new DateTime(CurrentMonth.Year, CurrentMonth.Month, d);
                 MonthCells.Add(new CalendarDayCell
                 {
-                    Date    = date,
+                    Date = date,
                     IsToday = date.Date == DateTime.Today,
-                    Events  = new ObservableCollection<CalendarEvent>(
-                                events.Where(e => e.StartDateTime.Date == date.Date))
+                    Events = new ObservableCollection<CalendarEvent>(events.Where(e => e.StartDateTime.Date == date.Date))
                 });
             }
         }
@@ -196,8 +219,15 @@ namespace Trojan.UI.ViewModels
                 .Where(e => e.StartDateTime.Date == SelectedDay.Date)
                 .OrderBy(e => e.StartDateTime)
                 .ToList();
-            foreach (var ev in evs)
-                DayEvents.Add(ev);
+            foreach (var ev in evs) DayEvents.Add(ev);
+        }
+
+        private void LoadAllReminders()
+        {
+            AllReminders.Clear();
+            using var db = new AppDbContext();
+            var reminders = db.Reminders.OrderBy(r => r.TriggerAt).ToList();
+            foreach (var r in reminders) AllReminders.Add(r);
         }
 
         private void OpenNewEventForm()
@@ -205,34 +235,46 @@ namespace Trojan.UI.ViewModels
             EditingEvent = new CalendarEvent
             {
                 StartDateTime = SelectedDay.Date.AddHours(9),
-                EndDateTime   = SelectedDay.Date.AddHours(10),
-                ColorHex      = "#A13599"
+                EndDateTime = SelectedDay.Date.AddHours(10),
+                ColorHex = "#A13599"
             };
             IsFormOpen = true;
         }
 
-        private void OpenEditForm(CalendarEvent ev)
+        private void OpenEditForm(CalendarEvent? ev)
         {
             if (ev == null) return;
             EditingEvent = ev;
             IsFormOpen = true;
         }
 
+        private void OpenEditReminderForm(Reminder? reminder)
+        {
+            if (reminder == null) return;
+            EditingReminder = new Reminder
+            {
+                Id = reminder.Id,
+                Title = reminder.Title,
+                TriggerAt = reminder.TriggerAt,
+                Recurrence = reminder.Recurrence,
+                LinkedEventId = reminder.LinkedEventId,
+                IsTriggered = reminder.IsTriggered
+            };
+            IsReminderFormOpen = true;
+        }
+
         private void SaveEvent()
         {
             using var db = new AppDbContext();
-            if (EditingEvent.Id == 0)
-                db.CalendarEvents.Add(EditingEvent);
-            else
-                db.CalendarEvents.Update(EditingEvent);
+            if (EditingEvent.Id == 0) db.CalendarEvents.Add(EditingEvent);
+            else db.CalendarEvents.Update(EditingEvent);
             db.SaveChanges();
-
             IsFormOpen = false;
             BuildMonthGrid();
             LoadDayEvents();
         }
 
-        private void DeleteEvent(CalendarEvent ev)
+        private void DeleteEvent(CalendarEvent? ev)
         {
             if (ev == null) return;
             using var db = new AppDbContext();
@@ -245,20 +287,29 @@ namespace Trojan.UI.ViewModels
         private void SaveReminder()
         {
             using var db = new AppDbContext();
-            db.Reminders.Add(EditingReminder);
+            if (EditingReminder.Id == 0) db.Reminders.Add(EditingReminder);
+            else db.Reminders.Update(EditingReminder);
             db.SaveChanges();
             IsReminderFormOpen = false;
+            LoadAllReminders();
+        }
+
+        private void DeleteReminder(Reminder? reminder)
+        {
+            if (reminder == null) return;
+            using var db = new AppDbContext();
+            db.Reminders.Remove(reminder);
+            db.SaveChanges();
+            LoadAllReminders();
         }
 
         private void SyncMonthToDay()
         {
             var firstOfMonth = new DateTime(SelectedDay.Year, SelectedDay.Month, 1);
-            if (firstOfMonth != CurrentMonth)
-                CurrentMonth = firstOfMonth;
+            if (firstOfMonth != CurrentMonth) CurrentMonth = firstOfMonth;
         }
 
-        // ── Time helpers – Event ────────────────────────────────────────────
-
+        // Time helpers
         public string StartHour
         {
             get => EditingEvent.StartDateTime.Hour.ToString("D2");
@@ -268,12 +319,10 @@ namespace Trojan.UI.ViewModels
                 {
                     var dt = EditingEvent.StartDateTime;
                     EditingEvent.StartDateTime = new DateTime(dt.Year, dt.Month, dt.Day, h, dt.Minute, 0);
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(EditingEvent));
+                    OnPropertyChanged(); OnPropertyChanged(nameof(EditingEvent));
                 }
             }
         }
-
         public string StartMinute
         {
             get => EditingEvent.StartDateTime.Minute.ToString("D2");
@@ -283,12 +332,10 @@ namespace Trojan.UI.ViewModels
                 {
                     var dt = EditingEvent.StartDateTime;
                     EditingEvent.StartDateTime = new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, m, 0);
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(EditingEvent));
+                    OnPropertyChanged(); OnPropertyChanged(nameof(EditingEvent));
                 }
             }
         }
-
         public string EndHour
         {
             get => EditingEvent.EndDateTime.Hour.ToString("D2");
@@ -298,12 +345,10 @@ namespace Trojan.UI.ViewModels
                 {
                     var dt = EditingEvent.EndDateTime;
                     EditingEvent.EndDateTime = new DateTime(dt.Year, dt.Month, dt.Day, h, dt.Minute, 0);
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(EditingEvent));
+                    OnPropertyChanged(); OnPropertyChanged(nameof(EditingEvent));
                 }
             }
         }
-
         public string EndMinute
         {
             get => EditingEvent.EndDateTime.Minute.ToString("D2");
@@ -313,14 +358,10 @@ namespace Trojan.UI.ViewModels
                 {
                     var dt = EditingEvent.EndDateTime;
                     EditingEvent.EndDateTime = new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, m, 0);
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(EditingEvent));
+                    OnPropertyChanged(); OnPropertyChanged(nameof(EditingEvent));
                 }
             }
         }
-
-        // ── Time helpers – Reminder ─────────────────────────────────────────
-
         public string ReminderHour
         {
             get => EditingReminder.TriggerAt.Hour.ToString("D2");
@@ -330,12 +371,10 @@ namespace Trojan.UI.ViewModels
                 {
                     var dt = EditingReminder.TriggerAt;
                     EditingReminder.TriggerAt = new DateTime(dt.Year, dt.Month, dt.Day, h, dt.Minute, 0);
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(EditingReminder));
+                    OnPropertyChanged(); OnPropertyChanged(nameof(EditingReminder));
                 }
             }
         }
-
         public string ReminderMinute
         {
             get => EditingReminder.TriggerAt.Minute.ToString("D2");
@@ -345,10 +384,54 @@ namespace Trojan.UI.ViewModels
                 {
                     var dt = EditingReminder.TriggerAt;
                     EditingReminder.TriggerAt = new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, m, 0);
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(EditingReminder));
+                    OnPropertyChanged(); OnPropertyChanged(nameof(EditingReminder));
                 }
             }
+        }
+        
+        // - Events overlay
+        private bool _isEventsOverlayVisible = false;
+        public bool IsEventsOverlayVisible
+        {
+            get => _isEventsOverlayVisible;
+            set
+            {
+                SetProperty(ref _isEventsOverlayVisible, value);
+                if (value) LoadAllEvents();
+            }
+        }
+
+        public ObservableCollection<CalendarEvent> AllEvents { get; } = new();
+
+        public ICommand OpenEventsOverlayCommand { get; }
+        public ICommand CloseEventsOverlayCommand { get; }
+        public ICommand EditEventFromListCommand { get; }
+        public ICommand DeleteEventFromListCommand { get; }
+
+        private void LoadAllEvents()
+        {
+            AllEvents.Clear();
+            using var db = new AppDbContext();
+            var events = db.CalendarEvents.OrderBy(e => e.StartDateTime).ToList();
+            foreach (var ev in events) AllEvents.Add(ev);
+        }
+
+        private void OpenEditEventFromList(CalendarEvent? ev)
+        {
+            if (ev == null) return;
+            EditingEvent = ev;
+            IsFormOpen = true;
+        }
+
+        private void DeleteEventFromList(CalendarEvent? ev)
+        {
+            if (ev == null) return;
+            using var db = new AppDbContext();
+            db.CalendarEvents.Remove(ev);
+            db.SaveChanges();
+            BuildMonthGrid();
+            LoadDayEvents();
+            LoadAllEvents();
         }
     }
 }
