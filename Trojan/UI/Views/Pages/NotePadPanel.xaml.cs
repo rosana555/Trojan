@@ -123,20 +123,26 @@ public partial class NotePadPanel : UserControl
         _isUpdatingDocument = false;
     }
 
-    private void NoteContentRichTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    private const int MaxNoteLength = 50000;
+
+    private void NoteContentRichTextBox_TextChanged(
+        object sender,
+        TextChangedEventArgs e)
     {
-        if (_isUpdatingDocument || DataContext is not HelperOverlayViewModel vm)
-        {
-            return;
-        }
+        TextRange range = new TextRange(
+            NoteContentRichTextBox.Document.ContentStart,
+            NoteContentRichTextBox.Document.ContentEnd);
 
-        if (_loadedNote is null || !ReferenceEquals(_loadedNote, vm.Main.SelectedNote))
+        if (range.Text.Length > MaxNoteLength)
         {
-            return;
-        }
+            MessageBox.Show(
+                $"Najveèja dovoljena dolžina beležke je {MaxNoteLength:N0} znakov.",
+                "Omejitev dosežena",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
 
-        _loadedNote.Content = GetCurrentEditorRtf();
-        vm.Main.MarkNoteDirty();
+            range.Text = range.Text.Substring(0, MaxNoteLength);
+        }
     }
 
     private string GetCurrentEditorRtf()

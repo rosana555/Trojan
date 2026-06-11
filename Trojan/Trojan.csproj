@@ -16,6 +16,7 @@
         <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
 
         <PackageReference Include="NAudio" Version="2.3.0" />
+        <PackageReference Include="System.Speech" Version="8.0.0" />
 
         <PackageReference Include="System.Drawing.Common" Version="10.0.8" />
         <PackageReference Include="System.Management" Version="10.0.7" />
@@ -27,7 +28,9 @@
         <None Remove="Assets\Joke\joke.csv" />
         <None Remove="Assets\Fact\fact.csv" />
         <None Remove="Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+        <None Remove="UI\Assets\SpriteSheet\gregor_samsa_choose.gif" />
         <None Remove="UI\Assets\SpriteSheet\gregor_samsa_sprite-1.gif" />
+        <None Remove="UI\Assets\SpriteSheet\sleepy_samsa.gif" />
         <None Remove="UI\Assets\TestImages\image1.jpg" />
         <None Remove="UI\Assets\TestImages\image2.jpg" />
         <None Remove="UI\Assets\TestImages\image3.jpg" />
@@ -49,6 +52,14 @@
 
         <Content Include="Assets\Slike\slikica.webp">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+
+        <Content Include="UI\Assets\SpriteSheet\gregor_samsa_choose.gif">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+
+        <Content Include="UI\Assets\SpriteSheet\sleepy_samsa.gif">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
 
         <Content Include="UI\Assets\SpriteSheet\sprite_sheet.png">

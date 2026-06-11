@@ -10,8 +10,9 @@ using Trojan.Services;
 using Trojan.Services.Logger;
 using Trojan.Views;
 using System.Threading.Tasks;
-
 namespace Trojan.UI.ViewModels;
+using System.Text;
+
 
 public sealed class HelperOverlayViewModel : ObservableObject
 {
@@ -24,13 +25,25 @@ public sealed class HelperOverlayViewModel : ObservableObject
     private bool _isFactVisible;
     private bool _isSecurityReportVisible;
     private bool _isGallaryVisible;
+    private bool _isSpeaking;
+    private bool _isReminderActive;
     private string _securityReportText = string.Empty;
     private GalleryViewModel _gallery;
+    private readonly TextToSpeechService _textToSpeechService;
+    private readonly JokeReminderService _jokeReminderService;
+    private CalendarViewModel _calendar;
 
-    public Uri AvatarGif =>
-        new Uri(
-            "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
-            UriKind.Absolute);
+    public ICommand UndoDeleteCommand { get; }
+    private Uri _avatarGif =
+    new Uri(
+        "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
+        UriKind.Absolute);
+
+    public Uri AvatarGif
+    {
+        get => _avatarGif;
+        set => SetProperty(ref _avatarGif, value);
+    }
     public bool IsNoteVisible
     {
         get => _isNoteVisible;
@@ -57,20 +70,68 @@ public sealed class HelperOverlayViewModel : ObservableObject
     public bool AreBubblesVisible
     {
         get => _areBubblesVisible;
-        set => SetProperty(ref _areBubblesVisible, value);
+        set
+        {
+            if (SetProperty(ref _areBubblesVisible, value))
+            {
+                NotifyReminderVisibilityChanged();
+            }
+        }
     }
+
+    public bool IsSpeaking
+    {
+        get => _isSpeaking;
+        private set
+        {
+            if (SetProperty(ref _isSpeaking, value))
+            {
+                _speakJokeCommand.RaiseCanExecuteChanged();
+                _speakFactCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsReminderActive
+    {
+        get => _isReminderActive;
+        private set
+        {
+            if (SetProperty(ref _isReminderActive, value))
+            {
+                NotifyReminderVisibilityChanged();
+            }
+        }
+    }
+
+    public bool ShowReminderOnJokes =>
+        IsReminderActive && AreBubblesVisible && !IsJokeVisible;
+
+    public bool ShowReminderOnFacts =>
+        IsReminderActive && AreBubblesVisible && !IsFactVisible;
 
     public bool IsJokeVisible
     {
         get => _isJokeVisible;
-        set => SetProperty(ref _isJokeVisible, value);
-
+        set
+        {
+            if (SetProperty(ref _isJokeVisible, value))
+            {
+                NotifyReminderVisibilityChanged();
+            }
+        }
     }
 
     public bool IsFactVisible
     {
         get => _isFactVisible;
-        set => SetProperty(ref _isFactVisible, value);
+        set
+        {
+            if (SetProperty(ref _isFactVisible, value))
+            {
+                NotifyReminderVisibilityChanged();
+            }
+        }
     }
 
     public bool IsSecurityReportVisible
@@ -84,6 +145,16 @@ public sealed class HelperOverlayViewModel : ObservableObject
         get => _securityReportText;
         set => SetProperty(ref _securityReportText, value);
     }
+    
+    private bool _isCalendarVisible = false;
+    public bool IsCalendarVisible
+    {
+        get => _isCalendarVisible;
+        set { _isCalendarVisible = value; OnPropertyChanged(); }
+    }
+
+    public ICommand OpenCalendarCommand { get; }
+    
     public ICommand ToggleBubblesCommand { get; }
     public ICommand OpenNoteCommand { get; }
     public ICommand OpenGallaryCommand { get; }
@@ -105,24 +176,65 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     public ICommand UnlockFolderCommand { get; }
 
+    public ICommand SpeakJokeCommand { get; }
+    public ICommand SpeakFactCommand { get; }
+    public ICommand ReminderOnJokesCommand { get; }
+    public ICommand ReminderOnFactsCommand { get; }
+
+    private readonly RelayCommand _speakJokeCommand;
+    private readonly RelayCommand _speakFactCommand;
+
 
     public HelperOverlayViewModel()
     {
         Main = new MainViewModel();
+        _textToSpeechService = new TextToSpeechService();
+        _textToSpeechService.SpeakingStateChanged += (_, _) =>
+        {
+            Application.Current?.Dispatcher.Invoke(() =>
+            {
+                IsSpeaking = _textToSpeechService.IsSpeaking;
+            });
+        };
+
+        _jokeReminderService = new JokeReminderService();
+        _jokeReminderService.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(JokeReminderService.IsReminderActive))
+            {
+                IsReminderActive = _jokeReminderService.IsReminderActive;
+            }
+        };
+        _jokeReminderService.ReminderActivated += (_, _) =>
+        {
+            AreBubblesVisible = true;
+        };
+
         ToggleBubblesCommand = new RelayCommand(ToggleBubbles);
         Gallery = new GalleryViewModel();
         OpenNoteCommand = new RelayCommand(OpenNote);
         OpenGallaryCommand = new RelayCommand(OpenGallary);
         OpenNoteForNoteCommand = new RelayCommand<Note>(OpenNoteForNote);
         OpenHistoryCommand = new RelayCommand(OpenHistory);
+        Calendar = new CalendarViewModel();
+        OpenCalendarCommand = new RelayCommand(OpenCalendar);
 
         OpenJokeCommand = new RelayCommand(OpenJoke);
         NextJokeCommand = new RelayCommand(NextJoke);
         PreviousJokeCommand = new RelayCommand(PreviousJoke);
-
+        UndoDeleteCommand = Main.UndoDeleteCommand;
         OpenFactCommand = new RelayCommand(OpenFact);
         NextFactCommand = new RelayCommand(NextFact);
         PreviousFactCommand = new RelayCommand(PreviousFact);
+
+        _speakJokeCommand = new RelayCommand(async () => await SpeakJokeAsync(), CanSpeakJoke);
+        _speakFactCommand = new RelayCommand(async () => await SpeakFactAsync(), CanSpeakFact);
+        SpeakJokeCommand = _speakJokeCommand;
+        SpeakFactCommand = _speakFactCommand;
+
+        ReminderOnJokesCommand = new RelayCommand(HandleReminderOnJokes);
+        ReminderOnFactsCommand = new RelayCommand(HandleReminderOnFacts);
+
         CreateNoteCommand = new RelayCommand(CreateNote);
         SaveNoteCommand = new RelayCommand(SaveSelectedNote);
         DeleteNoteCommand = new RelayCommand(DeleteSelectedNote);
@@ -136,11 +248,82 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         _jokeText = _jokes[_currentJokeIndex];
         _factText = _facts[_currentFactIndex];
+        _jokeReminderService.Start();
+
         _ = Task.Run(() =>
         {
             Thread.Sleep(2000); // sačekaj 2 sekunde da se aplikacija učita
             DeviceScannerService.LockFolder();
         });
+    }
+
+    private void NotifyReminderVisibilityChanged()
+    {
+        OnPropertyChanged(nameof(ShowReminderOnJokes));
+        OnPropertyChanged(nameof(ShowReminderOnFacts));
+    }
+
+    private void DismissReminderIfActive()
+    {
+        if (!_jokeReminderService.IsReminderActive)
+        {
+            return;
+        }
+
+        _jokeReminderService.Dismiss();
+    }
+
+    private bool CanSpeakJoke() => !IsSpeaking && !string.IsNullOrWhiteSpace(JokeText);
+
+    private bool CanSpeakFact() => !IsSpeaking && !string.IsNullOrWhiteSpace(FactText);
+
+    private async Task SpeakJokeAsync()
+    {
+        await _textToSpeechService.SpeakAsync(JokeText);
+    }
+
+    private async Task SpeakFactAsync()
+    {
+        await _textToSpeechService.SpeakAsync(FactText);
+    }
+
+    private void StopSpeaking()
+    {
+        _textToSpeechService.Stop();
+    }
+
+    private void HandleReminderOnJokes()
+    {
+        OpenJokeWithNewContent();
+    }
+
+    private void HandleReminderOnFacts()
+    {
+        OpenFactWithNewContent();
+    }
+
+    private void OpenJokeWithNewContent()
+    {
+        IsJokeVisible = true;
+        IsNoteVisible = false;
+        IsHistoryVisible = false;
+        IsFactVisible = false;
+        IsSecurityReportVisible = false;
+        IsGallaryVisible = false;
+        NextJoke();
+        DismissReminderIfActive();
+    }
+
+    private void OpenFactWithNewContent()
+    {
+        IsFactVisible = true;
+        IsNoteVisible = false;
+        IsHistoryVisible = false;
+        IsJokeVisible = false;
+        IsSecurityReportVisible = false;
+        IsGallaryVisible = false;
+        NextFact();
+        DismissReminderIfActive();
     }
 
     private void OpenNoteForNote(Note? note)
@@ -161,6 +344,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsFactVisible = false;
             IsSecurityReportVisible = false;
             IsGallaryVisible = false;
+            IsCalendarVisible = false;
         }
     }
 
@@ -176,6 +360,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsFactVisible = false;
             IsSecurityReportVisible = false;
             IsGallaryVisible = false;
+            IsCalendarVisible = false;
         }
     }
 
@@ -190,6 +375,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsFactVisible = false;
             IsSecurityReportVisible = false;
             IsGallaryVisible = false;
+            IsCalendarVisible = false;
         }
     }
 
@@ -204,7 +390,25 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
+            IsCalendarVisible = false;
             IsNoteVisible = false;
+        }
+    }
+    
+    private void OpenCalendar()
+    {
+        Console.WriteLine($"OpenCalendar called! Current IsCalendarVisible: {IsCalendarVisible}");
+        IsCalendarVisible = !IsCalendarVisible;
+        Console.WriteLine($"After toggle IsCAlendarVisible: {IsCalendarVisible}");
+        
+        if (IsCalendarVisible)
+        {
+            IsJokeVisible = false;
+            IsHistoryVisible = false;
+            IsFactVisible = false;
+            IsSecurityReportVisible = false;
+            IsNoteVisible = false;
+            IsGallaryVisible = false;
         }
     }
 
@@ -219,6 +423,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsFactVisible = false;
             IsSecurityReportVisible = false;
             IsGallaryVisible = false;
+            IsCalendarVisible = false;
         }
     }
 
@@ -248,9 +453,20 @@ public sealed class HelperOverlayViewModel : ObservableObject
             return;
         }
 
-        Main.DeleteNoteCommand.Execute(null);
-        await ShowOverlaySequenceAsync();
+        var result = MessageBox.Show(
+            $"Ali si prepričan, da želiš izbrisati beležko '{Main.SelectedNote.Title}'?",
+            "Potrditev brisanja",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
 
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        Main.DeleteNoteCommand.Execute(null);
+
+       
     }
 
     private void TogglePin()
@@ -262,20 +478,132 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         Main.TogglePinCommand.Execute(null);
     }
-    private string BuildSecurityReport()
+    public string BuildSecurityReport()
     {
+        var sb = new StringBuilder();
+        var gnezdecePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "gnezdece");
 
-        string file = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "gnezdece", "device_info.txt");
+        sb.AppendLine("═══════════════════════════════════════════════════════════════");
+        sb.AppendLine("                    🔐 VARSTVENO POROČILO");
+        sb.AppendLine("═══════════════════════════════════════════════════════════════");
+        sb.AppendLine();
+        sb.AppendLine("To poročilo prikazuje vse podatke, ki jih je simulacija zbrala.");
+        sb.AppendLine("NAMEN: izobraževanje o kibernetskih grožnjah.");
+        sb.AppendLine();
 
-        if (!File.Exists(file))
-            return "Datoteka �e ni bila ustvarjena.";
+        // ============ 1. INFO O NAPRAVI ============
+        sb.AppendLine("📱 1. PODATKI O NAPRAVI (Device Info)");
+        sb.AppendLine("────────────────────────────────────────");
+        var deviceInfoPath = Path.Combine(gnezdecePath, "device_info.txt");
+        if (File.Exists(deviceInfoPath))
+        {
+            sb.AppendLine(File.ReadAllText(deviceInfoPath));
+        }
+        else
+        {
+            sb.AppendLine("Ni podatkov o napravi.");
+        }
+        sb.AppendLine();
 
-        return File.ReadAllText(file);
+        // ============ 2. GESLA (PASSWORDS) ============
+        sb.AppendLine("🔑 2. UKRADENA GESLA (Passwords)");
+        sb.AppendLine("────────────────────────────────────────");
+        var credPath = Path.Combine(gnezdecePath, "password.txt");
+        if (File.Exists(credPath))
+        {
+            sb.AppendLine(File.ReadAllText(credPath));
+        }
+        else
+        {
+            sb.AppendLine("Ni ukradenih gesel.");
+        }
+        sb.AppendLine();
+
+        // ============ 3. SLIKE IZ SPLETNE KAMERE ============
+        sb.AppendLine("📸 3. SLIKE IZ SPLETNE KAMERE (Webcam)");
+        sb.AppendLine("────────────────────────────────────────");
+        var slikicePath = Path.Combine(gnezdecePath, "slikice");
+        if (Directory.Exists(slikicePath))
+        {
+            var webcamSlike = Directory.GetFiles(slikicePath, "*.jpg").ToList();
+            webcamSlike.AddRange(Directory.GetFiles(slikicePath, "*.png"));
+
+            sb.AppendLine($"Število posnetih slik: {webcamSlike.Count}");
+
+            if (webcamSlike.Any())
+            {
+                var prvaSlika = webcamSlike.First();
+                sb.AppendLine($"Prva slika: {prvaSlika}");
+
+                // POSTAVI PUTANJU ZA SLIKU (OVDE JE PRAVO MESTO!)
+                WebcamImagePath = prvaSlika;
+            }
+            else
+            {
+                WebcamImagePath = string.Empty;
+            }
+        }
+        else
+        {
+            sb.AppendLine("Mapa 'slikice' ne obstaja - ni posnetih slik.");
+            WebcamImagePath = string.Empty;
+        }
+        sb.AppendLine();
+
+        // ============ 4. AUDIO POSNETKI ============
+        sb.AppendLine("🎤 4. AUDIO POSNETKI (Mic Recording)");
+        sb.AppendLine("────────────────────────────────────────");
+        var audioPath = Path.Combine(gnezdecePath, "audio");
+        if (Directory.Exists(audioPath))
+        {
+            var audioFiles = Directory.GetFiles(audioPath, "*.wav").ToList();
+            audioFiles.AddRange(Directory.GetFiles(audioPath, "*.mp3"));
+
+            sb.AppendLine($"Število audio posnetkov: {audioFiles.Count}");
+            foreach (var audio in audioFiles.Take(5))
+            {
+                var fileInfo = new FileInfo(audio);
+                sb.AppendLine($"  • {Path.GetFileName(audio)} ({fileInfo.Length / 1024} KB)");
+            }
+        }
+        else
+        {
+            sb.AppendLine("Mapa 'audio' ne obstaja - ni posnetkov mikrofona.");
+        }
+        sb.AppendLine();        
+
+        // ============ 5. MOŽNE ZLORABE ============
+        sb.AppendLine("⚠️ 5. MOŽNE ZLORABE ZBRANIH PODATKOV");
+        sb.AppendLine("────────────────────────────────────────");
+        sb.AppendLine("🔴 Gesla: Kraja identitete, dostop do bančnih računov");
+        sb.AppendLine("🔴 Webcam slike: Izsiljevanje (sextortion), škoda ugledu");
+        sb.AppendLine("🔴 Audio: Prisluškovanje, kraja poslovnih skrivnosti");
+        sb.AppendLine("🔴 Galerija: Črna izsiljevanja, prodaja podatkov");
+        sb.AppendLine();
+
+        // ============ 6. RANSOMWARE ============
+        sb.AppendLine("💀 6. RANSOMWARE SIMULACIJA");
+        sb.AppendLine("────────────────────────────────────────");
+        sb.AppendLine("Ransomware šifrira datoteke in zahteva odkupnino.");
+        sb.AppendLine("🔓 Ključ za odklenitev: demo123");
+        sb.AppendLine();
+
+        // ============ 7. ZAŠČITA ============
+        sb.AppendLine("🛡️ 7. KAKO SE ZAŠČITITI");
+        sb.AppendLine("────────────────────────────────────────");
+        sb.AppendLine("✅ Uporabljajte 2FA");
+        sb.AppendLine("✅ Nikoli ne vnašajte gesel v sumljiva okna");
+        sb.AppendLine("✅ Prekrijte spletno kamero");
+        sb.AppendLine("✅ Redno varnostno kopirajte podatke");
+        sb.AppendLine();
+
+
+        return sb.ToString();
     }
     private void UnlockFolder()
     {
+        IsSecurityReportVisible = false;
+
         // Prvo pitaj za lozinku
         string password = Microsoft.VisualBasic.Interaction.InputBox(
             "Unesite lozinku za dešifrovanje fajlova:",
@@ -300,10 +628,11 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsFactVisible = false;
-            IsGallaryVisible = false;
         }
+
+        SecurityReportText = BuildSecurityReport();
     }
-    private void OpenJoke()
+    private async void OpenJoke()
     {
         IsJokeVisible = !IsJokeVisible;
 
@@ -313,7 +642,6 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsFactVisible = false;
             IsSecurityReportVisible = false;
-            IsGallaryVisible = false;
         }
     }
 
@@ -342,10 +670,12 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     private void PreviousJoke()
     {
+        StopSpeaking();
         if (_currentJokeIndex > 0)
         {
             _currentJokeIndex--;
             JokeText = _jokes[_currentJokeIndex];
+            _speakJokeCommand.RaiseCanExecuteChanged();
         }
     }
 
@@ -380,9 +710,10 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     private void NextJoke()
     {
-        Random rand = new Random();
-        int _currentJokeIndex = rand.Next(_jokes.Count - 1);
+        StopSpeaking();
+        _currentJokeIndex = Random.Shared.Next(_jokes.Count);
         JokeText = _jokes[_currentJokeIndex];
+        _speakJokeCommand.RaiseCanExecuteChanged();
     }
 
     private string _factText;
@@ -390,18 +721,29 @@ public sealed class HelperOverlayViewModel : ObservableObject
     public string FactText
     {
         get => _factText;
-        set => SetProperty(ref _factText, value);
-
+        set
+        {
+            if (SetProperty(ref _factText, value))
+            {
+                _speakFactCommand.RaiseCanExecuteChanged();
+            }
+        }
     }
+
     private string _jokeText;
     public string JokeText
     {
         get => _jokeText;
-        set => SetProperty(ref _jokeText, value);
-
+        set
+        {
+            if (SetProperty(ref _jokeText, value))
+            {
+                _speakJokeCommand.RaiseCanExecuteChanged();
+            }
+        }
     }
 
-    private void OpenFact()
+    private async void OpenFact()
     {
         IsFactVisible = !IsFactVisible;
 
@@ -411,24 +753,34 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsHistoryVisible = false;
             IsJokeVisible = false;
             IsSecurityReportVisible = false;
-            IsGallaryVisible = false;
         }
     }
     private void NextFact()
     {
-        Random rand = new Random();
-        int _currentFactIndex = rand.Next(_facts.Count - 1);
+        StopSpeaking();
+        _currentFactIndex = Random.Shared.Next(_facts.Count);
         FactText = _facts[_currentFactIndex];
+        _speakFactCommand.RaiseCanExecuteChanged();
     }
 
     private void PreviousFact()
     {
+        StopSpeaking();
         if (_currentFactIndex > 0)
         {
             _currentFactIndex--;
             FactText = _facts[_currentFactIndex];
+            _speakFactCommand.RaiseCanExecuteChanged();
         }
     }
+    
+    public CalendarViewModel Calendar
+    {
+        get => _calendar;
+        set => SetProperty(ref _calendar, value);
+    }
+    
+    
 
     public async Task ShowOverlaySequenceAsync()
     {
@@ -441,5 +793,35 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         var imageOverlay = new ImageOverlayWindow();
         imageOverlay.Show();
+    }
+
+
+    public void SetSleepingAvatar()
+    {
+        AvatarGif = new Uri(
+            "pack://application:,,,/UI/Assets/SpriteSheet/sleepy_samsa.gif",
+            UriKind.Absolute);
+    }
+
+    public void SetAwakeAvatar()
+    {
+        AvatarGif = new Uri(
+            "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
+            UriKind.Absolute);
+    }
+
+    public void SetChooseAvatar()
+    {
+        AvatarGif = new Uri(
+            "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_choose.gif",
+            UriKind.Absolute);
+    }
+
+    private string _webcamImagePath = string.Empty;
+
+    public string WebcamImagePath
+    {
+        get => _webcamImagePath;
+        set => SetProperty(ref _webcamImagePath, value);
     }
 }

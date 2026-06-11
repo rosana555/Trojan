@@ -17,7 +17,8 @@ public sealed class AvatarSpriteService : IAvatarSpriteService
     private const int DefaultFrameCount = DefaultColumns * DefaultRows;
     private const string SpriteImageRelativePath = "UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif";
     private const string SpriteMetadataRelativePath = "UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif";
-    
+    private AvatarState _state = AvatarState.Awake;
+    public AvatarState State => _state;
 
     private readonly IReadOnlyList<CroppedBitmap> _frames;
     private int _currentFrameIndex;
@@ -166,4 +167,22 @@ public sealed class AvatarSpriteService : IAvatarSpriteService
         [JsonPropertyName("padding")]
         public int Padding { get; init; }
     }
+
+    public enum AvatarState
+    {
+        Awake,
+        Sleeping
+    }
+
+    public void SetState(AvatarState state)
+    {
+        if (_state == state)
+            return;
+
+        _state = state;
+
+        OnPropertyChanged(nameof(State));
+        OnPropertyChanged(nameof(CurrentFrameImage));
+    }
+
 }

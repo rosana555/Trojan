@@ -1,0 +1,850 @@
+<UserControl x:Class="Trojan.UI.Views.Pages.CalendarPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:Trojan.UI.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="520">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:RecurrenceConverter x:Key="RecurrenceConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+
+        <!-- MAIN PANEL -->
+        <Border Width="500" Height="580"
+                Background="#F7F2F8"
+                CornerRadius="18"
+                Padding="24"
+                Margin="20"
+                VerticalAlignment="Center"
+                Visibility="{Binding DataContext.IsCalendarVisible,
+             RelativeSource={RelativeSource AncestorType=Window},
+             Converter={StaticResource BoolToVis}}">
+
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
+            </Border.Effect> 
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- HEADER -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0"
+                            Content="&#9664;"
+                            Width="34" Height="34"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontSize="14"
+                            Command="{Binding PrevMonthCommand}"/>
+
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding MonthLabel}"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+
+                    <Button Grid.Column="2"
+                            Content="&#9654;"
+                            Width="34" Height="34"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontSize="14"
+                            Command="{Binding NextMonthCommand}"/>
+
+                    <Border Grid.Column="3"
+                            CornerRadius="10"
+                            Background="#DCCFEB"
+                            Margin="8,0,0,0">
+                        <Button Padding="12,6"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="#4A4150"
+                                Command="{Binding SwitchViewCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Content" Value="Dnevni pogled"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDayView}" Value="True">
+                                            <Setter Property="Content" Value="Mesecni pogled"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Border>
+                </Grid>
+
+                <!-- MONTH VIEW -->
+                <Grid Grid.Row="1"
+                      Visibility="{Binding IsMonthView, Converter={StaticResource BoolToVis}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Pon" FontSize="12"
+                               Foreground="#8F8791" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock Grid.Column="1" Text="Tor" FontSize="12"
+                               Foreground="#8F8791" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock Grid.Column="2" Text="Sre" FontSize="12"
+                               Foreground="#8F8791" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock Grid.Column="3" Text="Cet" FontSize="12"
+                               Foreground="#8F8791" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock Grid.Column="4" Text="Pet" FontSize="12"
+                               Foreground="#8F8791" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock Grid.Column="5" Text="Sob" FontSize="12"
+                               Foreground="#8F8791" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock Grid.Column="6" Text="Ned" FontSize="12"
+                               Foreground="#8F8791" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                </Grid>
+
+                <!-- MONTH GRID -->
+                <ScrollViewer Grid.Row="2"
+                              VerticalScrollBarVisibility="Auto"
+                              Visibility="{Binding IsMonthView, Converter={StaticResource BoolToVis}}">
+                    <ItemsControl ItemsSource="{Binding MonthCells}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="63" Height="68"
+                                        Margin="1"
+                                        CornerRadius="10"
+                                        Cursor="Hand">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#EAE4EC"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsEmpty}" Value="True">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                    <Setter Property="Background" Value="#DCCFEB"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick"
+                                                      Command="{Binding DataContext.SelectDayCommand,
+                                                                RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding Date}"/>
+                                    </Border.InputBindings>
+
+                                    <Grid Margin="6,4">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0"
+                                                   Text="{Binding Date.Day}"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#4A4150">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsEmpty}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <ItemsControl Grid.Row="1"
+                                                      ItemsSource="{Binding Events}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Height="6" CornerRadius="3" Margin="0,1">
+                                                        <Border.Background>
+                                                            <SolidColorBrush Color="{Binding ColorHex}"/>
+                                                        </Border.Background>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- DAY VIEW -->
+                <Grid Grid.Row="2"
+                      Visibility="{Binding IsDayView, Converter={StaticResource BoolToVis}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- DAY NAVIGATION HEADER -->
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0"
+                                Content="&#9664;"
+                                Width="34" Height="34"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontSize="14"
+                                Command="{Binding PrevDayCommand}"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding DayLabel}"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="#4A4150"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"/>
+                        <Button Grid.Column="2"
+                                Content="&#9654;"
+                                Width="34" Height="34"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontSize="14"
+                                Command="{Binding NextDayCommand}"/>
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding DayEvents}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="12"
+                                            Margin="0,0,0,8"
+                                            Padding="14,10">
+                                        <Border.Background>
+                                            <SolidColorBrush Color="{Binding ColorHex}" Opacity="0.18"/>
+                                        </Border.Background>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="6"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Color strip -->
+                                            <Border Grid.Column="0"
+                                                    Width="4" CornerRadius="2">
+                                                <Border.Background>
+                                                    <SolidColorBrush Color="{Binding ColorHex}"/>
+                                                </Border.Background>
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                                <TextBlock Text="{Binding Title}"
+                                                           FontSize="15"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#2D2D2D"/>
+                                                <TextBlock Text="{Binding StartDateTime,
+                                                                  StringFormat={}{0:HH:mm} - }"
+                                                           FontSize="12"
+                                                           Foreground="#5C5661"/>
+                                                <TextBlock Text="{Binding Location}"
+                                                           FontSize="12"
+                                                           Foreground="#8F8791"/>
+                                            </StackPanel>
+
+                                            <Button Grid.Column="2"
+                                                    Content="Uredi"
+                                                    Padding="10,4"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="#7A5AC8"
+                                                    Command="{Binding DataContext.EditEventCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"/>
+
+                                            <Button Grid.Column="3"
+                                                    Content="Zbriši"
+                                                    Padding="10,4"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="#CC4444"
+                                                    Command="{Binding DataContext.DeleteEventCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- BOTTOM BUTTONS -->
+                <Grid Grid.Row="3" Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" CornerRadius="14"
+                            Background="#DCCFEB" Margin="0,0,6,0">
+                        <Button Content="Dodaj dogodek"
+                                Height="52"
+                                FontSize="17"
+                                FontWeight="SemiBold"
+                                Background="Transparent"
+                                Foreground="#4A4150"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Command="{Binding OpenAddEventCommand}"/>
+                    </Border>
+
+                    <Border Grid.Column="1" CornerRadius="14"
+                            Background="#E8DDE8" Margin="6,0,0,0">
+                        <Button Content="Dodaj opomnik"
+                                Height="52"
+                                FontSize="17"
+                                FontWeight="SemiBold"
+                                Background="Transparent"
+                                Foreground="#4A4150"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Command="{Binding OpenReminderCommand}"/>
+                    </Border>
+                </Grid>
+                
+                <!-- SECOND ROW: Overview buttons -->
+                <Grid Grid.Row="4" Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" CornerRadius="14" Background="#C8B8D8" Margin="0,0,6,0">
+                        <Button Content="Pregled opomnikov" Height="44" FontSize="14" FontWeight="SemiBold"
+                                Background="Transparent" Foreground="#4A4150" BorderThickness="0"
+                                Command="{Binding OpenRemindersOverlayCommand}"/>
+                    </Border>
+                    <Border Grid.Column="1" CornerRadius="14" Background="#C8B8D8" Margin="6,0,0,0">
+                        <Button Content="Pregled dogodkov" Height="44" FontSize="14" FontWeight="SemiBold"
+                                Background="Transparent" Foreground="#4A4150" BorderThickness="0"
+                                Command="{Binding OpenEventsOverlayCommand}"/>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+        
+        <!-- EVENTS OVERLAY -->
+<Border Width="500" Height="580"
+        Background="#F7F2F8"
+        CornerRadius="18"
+        Padding="24"
+        Margin="20"
+        VerticalAlignment="Center"
+        Visibility="{Binding IsEventsOverlayVisible, Converter={StaticResource BoolToVis}}">
+
+    <Border.Effect>
+        <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
+    </Border.Effect>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Vsi dogodki" FontSize="20" FontWeight="SemiBold"
+                       Foreground="#2D2D2D" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="✕" Width="34" Height="34" Background="#E8DDE8"
+                    BorderThickness="0" FontSize="16" FontWeight="Bold"
+                    Foreground="#4A4150" Cursor="Hand" Command="{Binding CloseEventsOverlayCommand}"/>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding AllEvents}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border CornerRadius="12" Margin="0,0,0,8" Padding="14,12" Background="White">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="6"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Border Grid.RowSpan="3" Grid.Column="0" Width="4" CornerRadius="2"
+                                        Background="{Binding ColorHex}"/>
+
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Title}"
+                                           FontSize="15" FontWeight="SemiBold" Foreground="#2D2D2D"
+                                           TextWrapping="Wrap" Margin="10,0,10,5"/>
+
+                                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="10,0,10,5">
+                                    <TextBlock Text="{Binding StartDateTime, StringFormat={}{0:dddd, dd. MMMM yyyy \ob HH:mm}}"
+                                               FontSize="12" Foreground="#5C5661"/>
+                                    <TextBlock Text=" - " FontSize="12" Foreground="#5C5661"/>
+                                    <TextBlock Text="{Binding EndDateTime, StringFormat={}{0:HH:mm}}"
+                                               FontSize="12" Foreground="#5C5661"/>
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Location}"
+                                           FontSize="11" Foreground="#8F8791" Margin="10,0,10,5"
+                                           Visibility="{Binding Location, Converter={StaticResource BoolToVis}}"/>
+
+                                <Button Grid.Row="0" Grid.Column="2" Content="Uredi" Padding="10,4" Margin="5,0,5,0"
+                                        Background="Transparent" BorderThickness="0" FontSize="12"
+                                        FontWeight="SemiBold" Foreground="#7A5AC8" Cursor="Hand"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding DataContext.EditEventFromListCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
+                                <Button Grid.Row="0" Grid.Column="3" Content="Zbriši" Padding="10,4"
+                                        Background="Transparent" BorderThickness="0" FontSize="12"
+                                        FontWeight="SemiBold" Foreground="#CC4444" Cursor="Hand"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding DataContext.DeleteEventFromListCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Border Grid.Row="2" CornerRadius="14" Background="#DCCFEB" Margin="0,12,0,0">
+            <Button Content="Dodaj nov dogodek" Height="52" FontSize="16" FontWeight="SemiBold"
+                    Background="Transparent" Foreground="#4A4150" BorderThickness="0"
+                    Command="{Binding OpenAddEventCommand}"/>
+        </Border>
+    </Grid>
+</Border>
+        
+                <!-- OVERLAY ZA PREGLED OPOMNIKOV (prekrije koledar) -->
+        <Border Width="500" Height="580"
+                Background="#F7F2F8"
+                CornerRadius="18"
+                Padding="24"
+                Margin="20"
+                VerticalAlignment="Center"
+                Visibility="{Binding IsRemindersOverlayVisible, Converter={StaticResource BoolToVis}}">
+
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Vsi opomniki" FontSize="20" FontWeight="SemiBold"
+                               Foreground="#2D2D2D" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Content="✕" Width="34" Height="34" Background="#E8DDE8"
+                            BorderThickness="0" FontSize="16" FontWeight="Bold"
+                            Foreground="#4A4150" Cursor="Hand" Command="{Binding CloseRemindersOverlayCommand}"/>
+                </Grid>
+
+                <!-- Seznam opomnikov -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding AllReminders}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="12" Margin="0,0,0,8" Padding="14,12" Background="White">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}"
+                                                   FontSize="15" FontWeight="SemiBold" Foreground="#2D2D2D"
+                                                   TextWrapping="Wrap" Margin="0,0,10,5"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Text="{Binding TriggerAt, StringFormat={}{0:dddd, dd. MMMM yyyy \ob HH:mm}}"
+                                                   FontSize="12" Foreground="#5C5661" Margin="0,0,10,5"/>
+                                        <Border Grid.Row="2" Grid.Column="0" CornerRadius="8" Background="#EAE4EC"
+                                                Padding="8,3" HorizontalAlignment="Left">
+                                            <TextBlock FontSize="11" Foreground="#4A4150"
+                                                       Text="{Binding Recurrence, Converter={StaticResource RecurrenceConverter}}"/>
+                                        </Border>
+
+                                        <Button Grid.Row="0" Grid.Column="1" Content="Uredi" Padding="10,4" Margin="5,0,5,0"
+                                                Background="Transparent" BorderThickness="0" FontSize="12"
+                                                FontWeight="SemiBold" Foreground="#7A5AC8" Cursor="Hand"
+                                                VerticalAlignment="Center"
+                                                Command="{Binding DataContext.EditReminderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                        <Button Grid.Row="0" Grid.Column="2" Content="Zbriši" Padding="10,4"
+                                                Background="Transparent" BorderThickness="0" FontSize="12"
+                                                FontWeight="SemiBold" Foreground="#CC4444" Cursor="Hand"
+                                                VerticalAlignment="Center"
+                                                Command="{Binding DataContext.DeleteReminderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Dodaj nov opomnik -->
+                <Border Grid.Row="2" CornerRadius="14" Background="#DCCFEB" Margin="0,12,0,0">
+                    <Button Content="Dodaj nov opomnik" Height="52" FontSize="16" FontWeight="SemiBold"
+                            Background="Transparent" Foreground="#4A4150" BorderThickness="0"
+                            Command="{Binding OpenReminderCommand}"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ADD / EDIT EVENT FORM OVERLAY -->
+        <Grid Background="#66000000"
+              Visibility="{Binding IsFormOpen, Converter={StaticResource BoolToVis}}">
+
+            <Border Width="420" Height="620"
+                    Background="White"
+                    CornerRadius="26"
+                    Padding="26"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="22" ShadowDepth="4" Opacity="0.22"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               FontSize="22" FontWeight="SemiBold"
+                               Foreground="#2D2D2D" Margin="0,0,0,18">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="Uredi dogodek"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding EditingEvent.Id}" Value="0">
+                                        <Setter Property="Text" Value="Dodaj dogodek"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- TITLE INPUT -->
+                    <Border Grid.Row="1" Background="#EAE4EC" CornerRadius="10"
+                            Padding="14,10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Naslov" FontSize="12" Foreground="#5C5661"/>
+                            <TextBox Text="{Binding EditingEvent.Title, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="16" Background="Transparent" BorderThickness="0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- DESCRIPTION INPUT -->
+                    <Border Grid.Row="2" Background="#EAE4EC" CornerRadius="10"
+                            Padding="14,10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Opis" FontSize="12" Foreground="#5C5661"/>
+                            <TextBox Text="{Binding EditingEvent.Description, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="15" Background="Transparent" BorderThickness="0"
+                                     TextWrapping="Wrap" MaxHeight="60"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- LOCATION INPUT -->
+                    <Border Grid.Row="3" Background="#EAE4EC" CornerRadius="10"
+                            Padding="14,10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Lokacija" FontSize="12" Foreground="#5C5661"/>
+                            <TextBox Text="{Binding EditingEvent.Location, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="15" Background="Transparent" BorderThickness="0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- START DATE + TIME -->
+                    <Border Grid.Row="4" Background="#EAE4EC" CornerRadius="10"
+                            Padding="14,10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Zacetek" FontSize="12" Foreground="#5C5661" Margin="0,0,0,4"/>
+                            <DatePicker SelectedDate="{Binding EditingEvent.StartDateTime}"
+                                        Background="Transparent" BorderThickness="0" FontSize="15"/>
+                            <TextBlock Text="Ura zacetka" FontSize="11" Foreground="#8F8791" Margin="0,6,0,4"/>
+                            <Border Background="#D8D0E0" CornerRadius="8" Padding="10,6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding StartHour}"
+                                             FontSize="15" Background="Transparent" BorderThickness="0"
+                                             TextAlignment="Center" MaxLength="2" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text=":" FontSize="16" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" Margin="4,0" Foreground="#4A4150"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding StartMinute}"
+                                             FontSize="15" Background="Transparent" BorderThickness="0"
+                                             TextAlignment="Center" MaxLength="2" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- END DATE + TIME -->
+                    <Border Grid.Row="5" Background="#EAE4EC" CornerRadius="10"
+                            Padding="14,10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Konec" FontSize="12" Foreground="#5C5661" Margin="0,0,0,4"/>
+                            <DatePicker SelectedDate="{Binding EditingEvent.EndDateTime}"
+                                        Background="Transparent" BorderThickness="0" FontSize="15"/>
+                            <TextBlock Text="Ura konca" FontSize="11" Foreground="#8F8791" Margin="0,6,0,4"/>
+                            <Border Background="#D8D0E0" CornerRadius="8" Padding="10,6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding EndHour}"
+                                             FontSize="15" Background="Transparent" BorderThickness="0"
+                                             TextAlignment="Center" MaxLength="2" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text=":" FontSize="16" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" Margin="4,0" Foreground="#4A4150"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding EndMinute}"
+                                             FontSize="15" Background="Transparent" BorderThickness="0"
+                                             TextAlignment="Center" MaxLength="2" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ATTACHED NOTE -->
+                    <Border Grid.Row="6" Background="#EAE4EC" CornerRadius="10"
+                            Padding="14,10" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="Priponka (ID belezke)" FontSize="12" Foreground="#5C5661"/>
+                            <TextBox Text="{Binding EditingEvent.AttachedNoteId, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="15" Background="Transparent" BorderThickness="0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- SAVE / CANCEL BUTTONS -->
+                    <Grid Grid.Row="7">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" CornerRadius="14" Background="#DCCFEB">
+                            <Button Content="Shrani"
+                                    Height="50" FontSize="16" FontWeight="SemiBold"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    Command="{Binding SaveEventCommand}"/>
+                        </Border>
+
+                        <Border Grid.Column="2" CornerRadius="14" Background="#E8DDE8">
+                            <Button Content="Preklic"
+                                    Height="50" FontSize="16" FontWeight="SemiBold"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    Command="{Binding CloseFormCommand}"/>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- REMINDER FORM OVERLAY -->
+        <Grid Background="#66000000"
+              Visibility="{Binding IsReminderFormOpen, Converter={StaticResource BoolToVis}}">
+
+            <Border Width="380" Height="480"
+                    Background="White"
+                    CornerRadius="26"
+                    Padding="26"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="22" ShadowDepth="4" Opacity="0.22"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="Dodaj opomnik"
+                               FontSize="22" FontWeight="SemiBold"
+                               Foreground="#2D2D2D" Margin="0,0,0,18"/>
+
+                    <!-- REMINDER TITLE -->
+                    <Border Grid.Row="1" Background="#EAE4EC" CornerRadius="10"
+                            Padding="14,10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Naslov" FontSize="12" Foreground="#5C5661"/>
+                            <TextBox Text="{Binding EditingReminder.Title, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="16" Background="Transparent" BorderThickness="0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- TRIGGER DATE + TIME -->
+                    <Border Grid.Row="2" Background="#EAE4EC" CornerRadius="10"
+                            Padding="14,10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Datum in cas" FontSize="12" Foreground="#5C5661" Margin="0,0,0,4"/>
+                            <DatePicker SelectedDate="{Binding EditingReminder.TriggerAt}"
+                                        Background="Transparent" BorderThickness="0" FontSize="15"/>
+                            <TextBlock Text="Ura opomnika" FontSize="11" Foreground="#8F8791" Margin="0,6,0,4"/>
+                            <Border Background="#D8D0E0" CornerRadius="8" Padding="10,6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding ReminderHour}"
+                                             FontSize="15" Background="Transparent" BorderThickness="0"
+                                             TextAlignment="Center" MaxLength="2" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text=":" FontSize="16" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" Margin="4,0" Foreground="#4A4150"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding ReminderMinute}"
+                                             FontSize="15" Background="Transparent" BorderThickness="0"
+                                             TextAlignment="Center" MaxLength="2" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- RECURRENCE -->
+                    <Border Grid.Row="3" Background="#EAE4EC" CornerRadius="10"
+                            Padding="14,10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Ponavljanje" FontSize="12" Foreground="#5C5661"/>
+                            <ComboBox SelectedValue="{Binding EditingReminder.Recurrence}"
+                                      SelectedValuePath="Tag"
+                                      Background="Transparent" BorderThickness="0"
+                                      FontSize="15">
+                                <ComboBoxItem Content="Enkratni" Tag="None"/>
+                                <ComboBoxItem Content="Vsak dan" Tag="Daily"/>
+                                <ComboBoxItem Content="Vsak teden" Tag="Weekly"/>
+                                <ComboBoxItem Content="Vsak mesec" Tag="Monthly"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- SAVE / CANCEL -->
+                    <Grid Grid.Row="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" CornerRadius="14" Background="#DCCFEB">
+                            <Button Content="Shrani"
+                                    Height="50" FontSize="16" FontWeight="SemiBold"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    Command="{Binding SaveReminderCommand}"/>
+                        </Border>
+
+                        <Border Grid.Column="2" CornerRadius="14" Background="#E8DDE8">
+                            <Button Content="Preklic"
+                                    Height="50" FontSize="16" FontWeight="SemiBold"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    Command="{Binding CloseFormCommand}"/>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+    </Grid>
+</UserControl>

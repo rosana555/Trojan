@@ -38,18 +38,54 @@
 			   Stretch="Uniform"
 			   Panel.ZIndex="999"
 			   IsHitTestVisible="False"
-			   gif:ImageBehavior.AnimatedSource="{Binding AvatarGif}"/>
+			   RenderTransformOrigin="0.5,0.5"
+			   gif:ImageBehavior.AnimatedSource="{Binding AvatarGif}">
+            <Image.RenderTransform>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
+            </Image.RenderTransform>
+            <Image.Style>
+                <Style TargetType="Image">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSpeaking}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                         From="1" To="1.06" Duration="0:0:0.35" />
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                         From="1" To="1.06" Duration="0:0:0.35" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                         To="1" Duration="0:0:0.15" />
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                         To="1" Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+        </Image>
 
         <!-- Notepad  -->
         <pages:NotePadPanel Grid.Column="0" HorizontalAlignment="Right"/>
 
+        <!-- Calendar -->
+        <pages:CalendarPanel Grid.Column="0" HorizontalAlignment="Right" DataContext="{Binding Calendar}"/>
+        
         <!-- Gallary  -->
         <pages:MainGallaryView Grid.Column="0" HorizontalAlignment="Right" DataContext="{Binding Gallery}"/>
 
         <!-- Jokes -->
         <Border Grid.Column="0" HorizontalAlignment="Right"
 				Width="320"
-				Height="300"
+				MaxHeight="520"
 				Background="#F7F2F8"
 				CornerRadius="18"
 				Padding="24"
@@ -69,7 +105,20 @@
 
             <StackPanel>
                 <TextBlock Text="Šale" FontSize="36" FontWeight="SemiBold" Margin="0,0,0,20"/>
-                <TextBlock Text="{Binding JokeText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28" Margin="0,0,0,28"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="300">
+                    <TextBlock Text="{Binding JokeText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28"/>
+                </ScrollViewer>
+                <Button Content="Govori"
+                        Command="{Binding SpeakJokeCommand}"
+                        HorizontalAlignment="Left"
+                        Margin="0,16,0,16"
+                        Padding="12,6"
+                        Background="#7A5AC8"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Cursor="Hand" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -111,7 +160,7 @@
         <!-- Facts -->
         <Border Grid.Column="0" HorizontalAlignment="Right"
 				Width="320"
-				Height="300"
+				Height="360"
 				Background="#F7F2F8"
 				CornerRadius="18"
 				Padding="24"
@@ -126,7 +175,18 @@
 
             <StackPanel>
                 <TextBlock Text="Zanimivosti" FontSize="36" FontWeight="SemiBold" Margin="0,0,0,20"/>
-                <TextBlock Text="{Binding FactText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28" Margin="0,0,0,28"/>
+                <TextBlock Text="{Binding FactText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28" Margin="0,0,0,16"/>
+                <Button Content="Govori"
+                        Command="{Binding SpeakFactCommand}"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,16"
+                        Padding="12,6"
+                        Background="#7A5AC8"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Cursor="Hand" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -177,17 +237,36 @@
                 <Border Style="{StaticResource HelperBubbleStyle}">
                     <Button Content="Beležka" Command="{Binding OpenNoteCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
-                <Border Style="{StaticResource HelperBubbleStyle}">
-                    <Button Content="Šale" Command="{Binding OpenJokeCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
-                </Border>
-                <Border Style="{StaticResource HelperBubbleStyle}">
-                    <Button Content="Zanimivosti" Command="{Binding OpenFactCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
-                </Border>
+                <Grid>
+                    <Border Style="{StaticResource HelperBubbleStyle}">
+                        <Button Content="Šale" Command="{Binding OpenJokeCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
+                    </Border>
+                    <Border Style="{StaticResource ReminderBadgeStyle}"
+                            Visibility="{Binding ShowReminderOnJokes, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            MouseLeftButtonUp="ReminderBadge_MouseLeftButtonUp"
+                            Tag="jokes">
+                        <TextBlock Text="!" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+                <Grid>
+                    <Border Style="{StaticResource HelperBubbleStyle}">
+                        <Button Content="Zanimivosti" Command="{Binding OpenFactCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
+                    </Border>
+                    <Border Style="{StaticResource ReminderBadgeStyle}"
+                            Visibility="{Binding ShowReminderOnFacts, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            MouseLeftButtonUp="ReminderBadge_MouseLeftButtonUp"
+                            Tag="facts">
+                        <TextBlock Text="!" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
                 <Border Style="{StaticResource HelperBubbleStyle}">
                     <Button Content="Varnostno poročilo" Command="{Binding OpenSecurityReportCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
                 <Border Style="{StaticResource HelperBubbleStyle}">
                     <Button Content="Galerija" Command="{Binding OpenGallaryCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
+                </Border>
+                <Border Style="{StaticResource HelperBubbleStyle}">
+                    <Button Content="Koledar" Command="{Binding OpenCalendarCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
             </StackPanel>
             <Button Style="{StaticResource HelperCircleButtonStyle}" Command="{Binding ToggleBubblesCommand}" />
@@ -195,16 +274,16 @@
 
         <!-- Security Report -->
         <Border Grid.Column="0" 
-                HorizontalAlignment="Right"
-                Width="360"
-                Height="420"
-                Background="#F7F2F8"
-                CornerRadius="18"
-                Padding="24"
-                Margin="20"
-                VerticalAlignment="Center"
-                Style="{StaticResource AnimatedPanelStyle}"
-                Visibility="{Binding IsSecurityReportVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+        HorizontalAlignment="Right"
+        Width="500"
+        Height="650"
+        Background="#F7F2F8"
+        CornerRadius="18"
+        Padding="24"
+        Margin="20"
+        VerticalAlignment="Center"
+        Style="{StaticResource AnimatedPanelStyle}"
+        Visibility="{Binding IsSecurityReportVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <Border.Effect>
                 <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
@@ -212,38 +291,76 @@
 
             <StackPanel>
                 <TextBlock Text="⚠️ Zaznano na tvojem računalniku"
-                           FontSize="18"
-                           FontWeight="SemiBold"
-                           Foreground="#A0522D"
-                           TextWrapping="Wrap"
-                           Margin="0,0,0,16"/>
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="#A0522D"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,16"/>
 
-                <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                <!-- WEBCAM SLIKA - DODATO -->
+                <Border Background="#EAE4EC"
+                CornerRadius="10"
+                Padding="10"
+                Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="📸 Posnetek s tvoje spletne kamere"
+                           FontSize="12"
+                           FontWeight="Bold"
+                           Foreground="#5C5661"
+                           Margin="0,0,0,8"/>
+                        <Image Source="{Binding WebcamImagePath}"
+                       Width="200"
+                       Height="150"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center">
+                            <Image.Style>
+                                <Style TargetType="Image">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding WebcamImagePath}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding WebcamImagePath}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                        <TextBlock Text="{Binding WebcamImagePath}"
+                           FontSize="8"
+                           Foreground="#8F8791"
+                           TextWrapping="Wrap"
+                           Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <ScrollViewer MaxHeight="250" VerticalScrollBarVisibility="Auto">
                     <TextBlock Text="{Binding SecurityReportText}"
-                               TextWrapping="Wrap"
-                               FontSize="13"
-                               Foreground="#514B56"
-                               LineHeight="22"
-                               FontFamily="Consolas"/>
+                       TextWrapping="Wrap"
+                       FontSize="11"
+                       Foreground="#514B56"
+                       LineHeight="18"
+                       FontFamily="Consolas"/>
                 </ScrollViewer>
 
                 <Button Content="🔓 DEŠIFRIRAJ DATOTEKE"
-                        Command="{Binding UnlockFolderCommand}"
-                        Margin="0,16,0,0"
-                        Padding="12,10"
-                        Background="#FF6B6B"
-                        Foreground="White"
-                        FontSize="14"
-                        FontWeight="Bold"
-                        BorderThickness="0"
-                        Cursor="Hand">
+                Command="{Binding UnlockFolderCommand}"
+                Margin="0,16,0,0"
+                Padding="12,10"
+                Background="#FF6B6B"
+                Foreground="White"
+                FontSize="14"
+                FontWeight="Bold"
+                BorderThickness="0"
+                Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{TemplateBinding Background}"
-                                    CornerRadius="8"
-                                    Padding="{TemplateBinding Padding}">
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}">
                                 <ContentPresenter HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"/>
+                                          VerticalAlignment="Center"/>
                             </Border>
                         </ControlTemplate>
                     </Button.Template>
