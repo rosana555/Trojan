@@ -26,7 +26,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
     private bool _isGallaryVisible;
     private string _securityReportText = string.Empty;
     private GalleryViewModel _gallery;
-
+    public ICommand UndoDeleteCommand { get; }
     private Uri _avatarGif =
     new Uri(
         "pack://application:,,,/UI/Assets/SpriteSheet/gregor_samsa_sprite-1.gif",
@@ -125,7 +125,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
         OpenJokeCommand = new RelayCommand(OpenJoke);
         NextJokeCommand = new RelayCommand(NextJoke);
         PreviousJokeCommand = new RelayCommand(PreviousJoke);
-
+        UndoDeleteCommand = Main.UndoDeleteCommand;
         OpenFactCommand = new RelayCommand(OpenFact);
         NextFactCommand = new RelayCommand(NextFact);
         PreviousFactCommand = new RelayCommand(PreviousFact);
@@ -254,9 +254,20 @@ public sealed class HelperOverlayViewModel : ObservableObject
             return;
         }
 
-        Main.DeleteNoteCommand.Execute(null);
-        await ShowOverlaySequenceAsync();
+        var result = MessageBox.Show(
+            $"Ali si prepričan, da želiš izbrisati beležko '{Main.SelectedNote.Title}'?",
+            "Potrditev brisanja",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
 
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        Main.DeleteNoteCommand.Execute(null);
+
+       
     }
 
     private void TogglePin()

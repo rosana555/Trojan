@@ -18,21 +18,37 @@ namespace Trojan.Services
 
         public void Start()
         {
-            _videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-
-            if (_videoDevices.Count == 0)
+            try
             {
-                throw new Exception("Webcam ni bila najdena.");
+                _videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+
+                Console.WriteLine($"Najdenih kamer: {_videoDevices.Count}");
+
+                foreach (FilterInfo device in _videoDevices)
+                {
+                    Console.WriteLine($"Kamera: {device.Name}");
+                }
+
+                if (_videoDevices.Count == 0)
+                {
+                    Console.WriteLine("Webcam ni bila najdena.");
+                    return;
+                }
+
+                _videoSource = new VideoCaptureDevice(_videoDevices[0].MonikerString);
+                _videoSource.NewFrame += VideoSource_NewFrame;
+                _videoSource.Start();
+
+                _timer = new Timer(1000);
+                _timer.Elapsed += Timer_Elapsed;
+                _timer.Start();
+
+                Console.WriteLine($"Uporabljam kamero: {_videoDevices[0].Name}");
             }
-            _videoSource = new VideoCaptureDevice(_videoDevices[0].MonikerString);
-            _videoSource.NewFrame += VideoSource_NewFrame;
-            _videoSource.Start();
-
-            _timer = new Timer(1000);
-            _timer.Elapsed += Timer_Elapsed;
-            _timer.Start();
-
-            Console.WriteLine("Webcam zagnana.");
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Napaka pri zagonu kamere: {ex}");
+            }
         }
 
         private void VideoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
