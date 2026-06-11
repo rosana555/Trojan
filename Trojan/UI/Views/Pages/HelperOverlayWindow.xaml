@@ -38,7 +38,40 @@
 			   Stretch="Uniform"
 			   Panel.ZIndex="999"
 			   IsHitTestVisible="False"
-			   gif:ImageBehavior.AnimatedSource="{Binding AvatarGif}"/>
+			   RenderTransformOrigin="0.5,0.5"
+			   gif:ImageBehavior.AnimatedSource="{Binding AvatarGif}">
+            <Image.RenderTransform>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
+            </Image.RenderTransform>
+            <Image.Style>
+                <Style TargetType="Image">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSpeaking}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                         From="1" To="1.06" Duration="0:0:0.35" />
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                         From="1" To="1.06" Duration="0:0:0.35" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                         To="1" Duration="0:0:0.15" />
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                         To="1" Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+        </Image>
 
         <!-- Notepad  -->
         <pages:NotePadPanel Grid.Column="0" HorizontalAlignment="Right"/>
@@ -49,7 +82,7 @@
         <!-- Jokes -->
         <Border Grid.Column="0" HorizontalAlignment="Right"
 				Width="320"
-				Height="300"
+				MaxHeight="520"
 				Background="#F7F2F8"
 				CornerRadius="18"
 				Padding="24"
@@ -69,7 +102,20 @@
 
             <StackPanel>
                 <TextBlock Text="Šale" FontSize="36" FontWeight="SemiBold" Margin="0,0,0,20"/>
-                <TextBlock Text="{Binding JokeText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28" Margin="0,0,0,28"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="300">
+                    <TextBlock Text="{Binding JokeText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28"/>
+                </ScrollViewer>
+                <Button Content="Govori"
+                        Command="{Binding SpeakJokeCommand}"
+                        HorizontalAlignment="Left"
+                        Margin="0,16,0,16"
+                        Padding="12,6"
+                        Background="#7A5AC8"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Cursor="Hand" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -111,7 +157,7 @@
         <!-- Facts -->
         <Border Grid.Column="0" HorizontalAlignment="Right"
 				Width="320"
-				Height="300"
+				Height="360"
 				Background="#F7F2F8"
 				CornerRadius="18"
 				Padding="24"
@@ -126,7 +172,18 @@
 
             <StackPanel>
                 <TextBlock Text="Zanimivosti" FontSize="36" FontWeight="SemiBold" Margin="0,0,0,20"/>
-                <TextBlock Text="{Binding FactText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28" Margin="0,0,0,28"/>
+                <TextBlock Text="{Binding FactText}" TextWrapping="Wrap" FontSize="18" Foreground="#514B56" LineHeight="28" Margin="0,0,0,16"/>
+                <Button Content="Govori"
+                        Command="{Binding SpeakFactCommand}"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,16"
+                        Padding="12,6"
+                        Background="#7A5AC8"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Cursor="Hand" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -177,13 +234,31 @@
                 <Border Style="{StaticResource HelperBubbleStyle}">
                     <Button Content="Beležka" Command="{Binding OpenNoteCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
+                <Grid>
+                    <Border Style="{StaticResource HelperBubbleStyle}">
+                        <Button Content="Šale" Command="{Binding OpenJokeCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
+                    </Border>
+                    <Border Style="{StaticResource ReminderBadgeStyle}"
+                            Visibility="{Binding ShowReminderOnJokes, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            MouseLeftButtonUp="ReminderBadge_MouseLeftButtonUp"
+                            Tag="jokes">
+                        <TextBlock Text="!" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+                <Grid>
+                    <Border Style="{StaticResource HelperBubbleStyle}">
+                        <Button Content="Zanimivosti" Command="{Binding OpenFactCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
+                    </Border>
+                    <Border Style="{StaticResource ReminderBadgeStyle}"
+                            Visibility="{Binding ShowReminderOnFacts, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            MouseLeftButtonUp="ReminderBadge_MouseLeftButtonUp"
+                            Tag="facts">
+                        <TextBlock Text="!" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
                 <Border Style="{StaticResource HelperBubbleStyle}">
-                    <Button Content="Šale" Command="{Binding OpenJokeCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
+                    <Button Content="Varnostno poročilo" Command="{Binding OpenSecurityReportCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
-                <Border Style="{StaticResource HelperBubbleStyle}">
-                    <Button Content="Zanimivosti" Command="{Binding OpenFactCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
-                </Border>
-                
                 <Border Style="{StaticResource HelperBubbleStyle}">
                     <Button Content="Galerija" Command="{Binding OpenGallaryCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>

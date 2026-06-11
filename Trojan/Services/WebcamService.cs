@@ -22,7 +22,8 @@ namespace Trojan.Services
 
             if (_videoDevices.Count == 0)
             {
-                throw new Exception("Webcam ni bila najdena.");
+                Console.WriteLine("Webcam ni bila najdena. Preskakujem zajemanje slike.");
+                return;
             }
             _videoSource = new VideoCaptureDevice(_videoDevices[0].MonikerString);
             _videoSource.NewFrame += VideoSource_NewFrame;

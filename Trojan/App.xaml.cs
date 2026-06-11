@@ -98,7 +98,7 @@ namespace Trojan
             helperOverlayWindow.DataContext as HelperOverlayViewModel;
             MainWindow = helperOverlayWindow;
             helperOverlayWindow.Show();
-
+            mainWindow.Hide();
         
         }
 

