@@ -394,21 +394,17 @@ public sealed class HelperOverlayViewModel : ObservableObject
             IsNoteVisible = false;
         }
     }
-    
+
     private void OpenCalendar()
     {
-        Console.WriteLine($"OpenCalendar called! Current IsCalendarVisible: {IsCalendarVisible}");
-        IsCalendarVisible = !IsCalendarVisible;
-        Console.WriteLine($"After toggle IsCAlendarVisible: {IsCalendarVisible}");
-        
-        if (IsCalendarVisible)
+        bool open = !IsCalendarVisible;
+
+        CloseAllPanels();
+
+        if (open)
         {
-            IsJokeVisible = false;
-            IsHistoryVisible = false;
-            IsFactVisible = false;
-            IsSecurityReportVisible = false;
-            IsNoteVisible = false;
-            IsGallaryVisible = false;
+            SetAwakeAvatar();
+            IsCalendarVisible = true;
         }
     }
 
@@ -633,23 +629,27 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
         SecurityReportText = BuildSecurityReport();
     }
-    private async void OpenJoke()
+    private void OpenJoke()
     {
-        IsJokeVisible = !IsJokeVisible;
+        bool open = !IsJokeVisible;
 
-        if (IsJokeVisible)
+        CloseAllPanels();
+
+        if (open)
         {
-            IsNoteVisible = false;
-            IsHistoryVisible = false;
-            IsFactVisible = false;
-            IsSecurityReportVisible = false;
+            SetChooseAvatar();
+            IsJokeVisible = true;
             DismissReminderIfActive();
-            IsCalendarVisible = false;
+        }
+        else
+        {
+            SetAwakeAvatar();
         }
     }
 
     private static List<string> ReadJokes()
     {
+
         var list = new List<string>();
         var file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Joke", "joke.csv");
         using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(file))
@@ -673,6 +673,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     private void PreviousJoke()
     {
+        OpenSecurityReport();
         StopSpeaking();
         if (_currentJokeIndex > 0)
         {
@@ -746,20 +747,24 @@ public sealed class HelperOverlayViewModel : ObservableObject
         }
     }
 
-    private async void OpenFact()
+    private void OpenFact()
     {
-        IsFactVisible = !IsFactVisible;
+        bool open = !IsFactVisible;
 
-        if (IsFactVisible)
+        CloseAllPanels();
+
+        if (open)
         {
-            IsNoteVisible = false;
-            IsHistoryVisible = false;
-            IsJokeVisible = false;
-            IsSecurityReportVisible = false;
+            SetChooseAvatar();
+            IsFactVisible = true;
             DismissReminderIfActive();
-            IsCalendarVisible = false;
+        }
+        else
+        {
+            SetAwakeAvatar();
         }
     }
+
     private void NextFact()
     {
         StopSpeaking();
@@ -770,6 +775,7 @@ public sealed class HelperOverlayViewModel : ObservableObject
 
     private void PreviousFact()
     {
+        ShowOverlaySequenceAsync();
         StopSpeaking();
         if (_currentFactIndex > 0)
         {
@@ -828,5 +834,18 @@ public sealed class HelperOverlayViewModel : ObservableObject
     {
         get => _webcamImagePath;
         set => SetProperty(ref _webcamImagePath, value);
+    }
+
+    private void CloseAllPanels()
+    {
+        IsNoteVisible = false;
+        IsHistoryVisible = false;
+        IsJokeVisible = false;
+        IsFactVisible = false;
+        IsSecurityReportVisible = false;
+        IsGallaryVisible = false;
+        IsCalendarVisible = false;
+
+        SetAwakeAvatar();
     }
 }

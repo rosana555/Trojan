@@ -91,18 +91,14 @@
 				Padding="24"
 				Margin="20"
 				VerticalAlignment="Center"
-				Opacity="0"
-				RenderTransformOrigin="0.5,0.5"
+				
 				Visibility="{Binding IsJokeVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <Border.Effect>
                 <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.18"/>
             </Border.Effect>
 
-            <Border.RenderTransform>
-                <ScaleTransform ScaleX="0.9" ScaleY="0.9"/>
-            </Border.RenderTransform>
-
+       
             <StackPanel>
                 <TextBlock Text="Šale" FontSize="36" FontWeight="SemiBold" Margin="0,0,0,20"/>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="300">
@@ -129,32 +125,7 @@
                 </Grid>
             </StackPanel>
 
-            <Border.Style>
-                <Style TargetType="Border">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsJokeVisible}" Value="True">
-                            <DataTrigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.25"/>
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.25"/>
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.25"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </DataTrigger.EnterActions>
-                            <DataTrigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)" To="0.92" Duration="0:0:0.2"/>
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="0.92" Duration="0:0:0.2"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </DataTrigger.ExitActions>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
+            
         </Border>
 
         <!-- Facts -->
@@ -166,7 +137,6 @@
 				Padding="24"
 				Margin="20"
 				VerticalAlignment="Center"
-				Style="{StaticResource AnimatedPanelStyle}"
 				Visibility="{Binding IsFactVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <Border.Effect>
@@ -259,9 +229,7 @@
                         <TextBlock Text="!" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
-                <Border Style="{StaticResource HelperBubbleStyle}">
-                    <Button Content="Varnostno poročilo" Command="{Binding OpenSecurityReportCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
-                </Border>
+                
                 <Border Style="{StaticResource HelperBubbleStyle}">
                     <Button Content="Galerija" Command="{Binding OpenGallaryCommand}" Background="Transparent" BorderThickness="0" FontSize="16"/>
                 </Border>
@@ -282,7 +250,6 @@
         Padding="24"
         Margin="20"
         VerticalAlignment="Center"
-        Style="{StaticResource AnimatedPanelStyle}"
         Visibility="{Binding IsSecurityReportVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <Border.Effect>
